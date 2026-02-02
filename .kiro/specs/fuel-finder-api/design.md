@@ -164,14 +164,13 @@ class PriceService:
     def __init__(self, http_client: HTTPClient, cache: ResponseCache)
     def get_all_pfs_prices(
         self, 
-        date_time: str = None,  # YYYY-MM-DD format
         batch_number: int = None,
-        effective_start_timestamp: str = None  # YYYY-MM-DD HH:MM:SS
+        effective_start_timestamp: str = None  # YYYY-MM-DD HH:MM:SS format
     ) -> List[PFS]
     def get_pfs_by_node_id(self, node_id: str) -> PFS
     def search_prices(self, filters: dict) -> List[PFS]
     def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]
-    def get_incremental_updates(self, since: str) -> List[PFS]
+    def get_incremental_updates(self, since_timestamp: str) -> List[PFS]
 ```
 
 #### Forecourt Service (`services/forecourt_service.py`)
@@ -180,14 +179,13 @@ class PriceService:
 
 **Key Methods**:
 ```python
-class ForecourtsService:
+class ForecourtService:
     def __init__(self, http_client: HTTPClient, cache: ResponseCache)
     def get_all_pfs(self, batch_number: int = None) -> List[PFSInfo]
     def get_incremental_pfs(
         self,
-        date_time: str,  # YYYY-MM-DD format
-        batch_number: int = None,
-        effective_start_timestamp: str = None
+        effective_start_timestamp: str,  # YYYY-MM-DD HH:MM:SS format
+        batch_number: int = None
     ) -> List[PFSInfo]
     def get_pfs_by_node_id(self, node_id: str) -> PFSInfo
     def get_all_pfs_paginated(self) -> Iterator[List[PFSInfo]]  # Auto-paginate through all batches
@@ -213,17 +211,17 @@ class FuelFinderClient:
     # PFS and Price methods
     def get_all_pfs_prices(
         self, 
-        date_time: str = None,  # YYYY-MM-DD
         batch_number: int = None,
+        effective_start_timestamp: str = None,  # YYYY-MM-DD HH:MM:SS
         **kwargs
     ) -> List[PFS]
     def get_pfs(self, node_id: str) -> PFS
     def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]
-    def get_incremental_updates(self, since_date: str) -> List[PFS]
+    def get_incremental_price_updates(self, since_timestamp: str) -> List[PFS]
     
     # Forecourt methods
     def get_all_pfs_info(self, batch_number: int = None, **kwargs) -> List[PFSInfo]
-    def get_incremental_pfs_info(self, since_date: str, **kwargs) -> List[PFSInfo]
+    def get_incremental_pfs_info(self, since_timestamp: str, **kwargs) -> List[PFSInfo]
     def get_pfs_info(self, node_id: str) -> PFSInfo
     def get_all_pfs_paginated(self) -> Iterator[List[PFSInfo]]  # Auto-paginate
     
@@ -268,11 +266,9 @@ class Config:
 ```python
 @dataclass
 class FuelPrice:
-    fuel_type: str
-    price: float
-    currency: str
-    updated_at: datetime
-    # Additional fields from API
+    fuel_type: str  # E10, E5, B7_STANDARD, B7_PREMIUM, B10, HVO
+    price: Optional[float]  # Can be null, comes as string like "0120.0000"
+    price_last_updated: Optional[datetime]  # Can be null
 
 @dataclass
 class PFS:
@@ -286,13 +282,21 @@ class PFS:
 @dataclass
 class Forecourt:
     node_id: str
-    name: str
-    address: dict
-    operator: str
-    brand: str
-    amenities: list
-    opening_hours: dict
-    location: dict  # lat, lon
+    node_id: str
+    mft_organisation_name: str
+    trading_name: str
+    public_phone_number: Optional[str]
+    is_same_trading_and_brand_name: Optional[bool]
+    brand_name: Optional[str]
+    temporary_closure: Optional[bool]
+    permanent_closure: Optional[bool]
+    permanent_closure_date: Optional[str]
+    is_motorway_service_station: Optional[bool]
+    is_supermarket_service_station: Optional[bool]
+    location: Optional[Location]  # lat, lon + full address
+    amenities: Optional[List[str]]
+    opening_times: Optional[dict]
+    fuel_types: Optional[List[str]]  # Available fuel types
 ```
 
 ## Error Hierarchy
