@@ -127,6 +127,7 @@ class PFSInfo:
     location: Optional[Location] = None
     amenities: Optional[List[str]] = None
     opening_times: Optional[Dict[str, Any]] = None
+    fuel_types: Optional[List[str]] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "PFSInfo":
@@ -148,4 +149,5 @@ class PFSInfo:
             location=location,
             amenities=data.get("amenities"),
             opening_times=data.get("opening_times"),
+            fuel_types=data.get("fuel_types"),
         )
