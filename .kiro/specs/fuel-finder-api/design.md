@@ -603,19 +603,20 @@ components:
   - 500: Internal server error
 
 ### Refresh Token Endpoint
-- **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/refresh_token`
+- **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/regenerate_access_token`
 - **Method**: POST
 - **Content-Type**: application/json
 - **Request Body**:
 ```json
 {
+  "client_id": "your_client_id",
   "refresh_token": "your_refresh_token"
 }
 ```
 - **Responses**:
-  - 200: Access token refreshed successfully
-  - 400: Invalid request payload
-  - 401: Invalid or expired refresh token
+  - 200: Access token regenerated successfully
+  - 400: Invalid refresh token or client id
+  - 401: Refresh token expired or revoked
   - 500: Internal server error
 
 ### Information Recipient API
