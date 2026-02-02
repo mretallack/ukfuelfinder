@@ -862,7 +862,7 @@ docs/
 └── examples.md
 
 README.md
-LICENSE
+LICENSE (MIT)
 setup.py
 pyproject.toml
 requirements.txt
@@ -1387,7 +1387,6 @@ prices = client.get_prices(fuel_type="unleaded")
 ## License
 
 MIT License
-```
 
 ### Quick Start Guide (`docs/quickstart.md`)
 
