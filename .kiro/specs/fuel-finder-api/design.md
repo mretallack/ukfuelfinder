@@ -229,8 +229,8 @@ class Config:
     client_id: str
     client_secret: str
     environment: str
-    base_url: str
-    token_url: str
+    base_url: str  # https://www.fuel-finder.service.gov.uk/api
+    token_url: str  # https://www.fuel-finder.service.gov.uk/api/v1/oauth/generate_access_token
     timeout: int
     cache_enabled: bool
     rate_limit_rpm: int
@@ -304,31 +304,44 @@ cache:
 ## API Endpoints (Based on Documentation)
 
 ### Base URLs
-- **Production**: `https://api.fuelfinder.service.gov.uk`
-- **Test**: `https://test-api.fuelfinder.service.gov.uk` (assumed)
+- **Production**: `https://www.fuel-finder.service.gov.uk/api`
+- **Test**: `https://test.fuel-finder.service.gov.uk/api` (assumed)
 
 ### Token Endpoint
-- **URL**: `/oauth/token` (assumed based on OAuth 2.0 standards)
+- **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/generate_access_token`
 - **Method**: POST
+- **Flow**: OAuth 2.0 Client Credentials
 - **Content-Type**: application/x-www-form-urlencoded
+- **Parameters**:
+  - `grant_type`: `client_credentials`
+  - `client_id`: Your client ID
+  - `client_secret`: Your client secret
 
-### Prices Endpoints
-- `GET /v1/prices` - List all prices with optional filters
-- `GET /v1/prices/{id}` - Get specific price by ID
+### Information Recipient API
 
-**Query Parameters**:
+**Fetch All PFS Fuel Prices**
+- **Endpoint**: `GET /v1/prices`
+- **Description**: Fetch all fuel prices from PFS (Petrol Filling Stations)
+- **Authorization**: Bearer token (OAuth 2.0)
+- **Responses**:
+  - `200`: Success - Returns fuel prices data
+  - `401`: Unauthorized - Invalid or missing token
+
+**Query Parameters** (assumed based on typical patterns):
 - `fuel_type`: Filter by fuel type (unleaded, diesel, etc.)
 - `latitude`, `longitude`, `radius`: Geographic filtering
 - `page`, `per_page`: Pagination
+- `updated_since`: Incremental updates (ISO 8601 timestamp)
 
-### Forecourts Endpoints
-- `GET /v1/forecourts` - List all forecourts with optional filters
+### Forecourts/PFS Endpoints (assumed)
+- `GET /v1/forecourts` - List all forecourts/PFS stations
 - `GET /v1/forecourts/{id}` - Get specific forecourt by ID
 
 **Query Parameters**:
 - `latitude`, `longitude`, `radius`: Geographic filtering
 - `operator`: Filter by operator
 - `page`, `per_page`: Pagination
+- `updated_since`: Incremental updates
 
 ## Security Considerations
 
