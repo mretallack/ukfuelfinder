@@ -428,7 +428,7 @@ cache:
 ## Package Structure
 
 ```
-fuelfinder/
+ukfuelfinder/
 ├── __init__.py
 ├── client.py
 ├── auth.py
@@ -447,16 +447,51 @@ fuelfinder/
     └── validators.py
 
 tests/
+├── __init__.py
+├── conftest.py
 ├── unit/
+│   ├── __init__.py
 │   ├── test_auth.py
 │   ├── test_http_client.py
 │   ├── test_cache.py
-│   └── test_rate_limiter.py
+│   ├── test_rate_limiter.py
+│   ├── test_client.py
+│   └── test_services.py
 ├── integration/
+│   ├── __init__.py
 │   ├── test_prices.py
-│   └── test_forecourts.py
+│   ├── test_forecourts.py
+│   └── test_end_to_end.py
 └── fixtures/
+    ├── __init__.py
     └── responses.py
+
+examples/
+├── basic_usage.py
+├── advanced_filtering.py
+├── caching_example.py
+├── error_handling.py
+└── async_usage.py
+
+docs/
+├── index.md
+├── quickstart.md
+├── api_reference.md
+├── authentication.md
+├── error_handling.md
+├── caching.md
+├── rate_limiting.md
+└── examples.md
+
+README.md
+LICENSE
+setup.py
+pyproject.toml
+requirements.txt
+requirements-dev.txt
+.gitignore
+CONTRIBUTING.md
+CHANGELOG.md
 ```
 
 ## Future Enhancements
@@ -474,3 +509,975 @@ tests/
 - Historical data tracking
 - Analytics and reporting
 - Multi-region support
+
+---
+
+## Testing Layer
+
+### Unit Tests
+
+#### Test Coverage Requirements
+- Minimum 80% code coverage
+- 100% coverage for critical paths (auth, error handling)
+- All public methods must have tests
+- All error conditions must be tested
+
+#### Test Structure
+
+**Authentication Tests** (`tests/unit/test_auth.py`)
+```python
+def test_get_token_success()
+def test_get_token_caches_result()
+def test_token_refresh_before_expiry()
+def test_invalid_credentials_raises_error()
+def test_token_endpoint_failure_retries()
+def test_thread_safe_token_access()
+```
+
+**HTTP Client Tests** (`tests/unit/test_http_client.py`)
+```python
+def test_get_request_success()
+def test_authentication_header_injected()
+def test_401_triggers_token_refresh()
+def test_404_raises_not_found_error()
+def test_429_raises_rate_limit_error()
+def test_5xx_retries_with_backoff()
+def test_timeout_raises_timeout_error()
+def test_malformed_json_raises_parse_error()
+```
+
+**Cache Tests** (`tests/unit/test_cache.py`)
+```python
+def test_cache_stores_and_retrieves()
+def test_cache_expires_after_ttl()
+def test_cache_key_generation()
+def test_cache_clear()
+def test_thread_safe_cache_access()
+```
+
+**Rate Limiter Tests** (`tests/unit/test_rate_limiter.py`)
+```python
+def test_rate_limit_enforced()
+def test_backoff_on_429_error()
+def test_retry_after_header_respected()
+def test_daily_limit_enforced()
+def test_sliding_window_calculation()
+```
+
+**Client Tests** (`tests/unit/test_client.py`)
+```python
+def test_client_initialization()
+def test_environment_configuration()
+def test_get_prices_calls_service()
+def test_cache_can_be_disabled()
+def test_custom_timeout_applied()
+```
+
+**Service Tests** (`tests/unit/test_services.py`)
+```python
+def test_price_service_get_prices()
+def test_price_service_filters_applied()
+def test_forecourt_service_get_forecourts()
+def test_service_uses_cache()
+```
+
+### Integration Tests
+
+#### Test Environment Setup
+- Use test environment credentials
+- Mock external dependencies (Ordnance Survey, Companies House)
+- Use VCR.py for recording/replaying HTTP interactions
+- Separate test data from production
+
+**Price Integration Tests** (`tests/integration/test_prices.py`)
+```python
+def test_get_all_prices()
+def test_filter_prices_by_fuel_type()
+def test_filter_prices_by_location()
+def test_pagination_works()
+def test_get_price_by_id()
+def test_invalid_price_id_returns_404()
+```
+
+**Forecourt Integration Tests** (`tests/integration/test_forecourts.py`)
+```python
+def test_get_all_forecourts()
+def test_filter_forecourts_by_location()
+def test_get_forecourt_by_id()
+def test_forecourt_includes_amenities()
+```
+
+**End-to-End Tests** (`tests/integration/test_end_to_end.py`)
+```python
+def test_complete_workflow()
+def test_rate_limit_handling()
+def test_cache_reduces_api_calls()
+def test_token_refresh_on_expiry()
+```
+
+### Test Fixtures
+
+**Response Fixtures** (`tests/fixtures/responses.py`)
+```python
+MOCK_TOKEN_RESPONSE = {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "Bearer",
+    "expires_in": 3600
+}
+
+MOCK_PRICES_RESPONSE = {
+    "data": [
+        {
+            "id": "price-123",
+            "forecourt_id": "GB-12345",
+            "fuel_type": "unleaded",
+            "price": 142.9,
+            "currency": "GBP",
+            "updated_at": "2026-02-02T18:00:00Z"
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "per_page": 20,
+        "total": 5000
+    }
+}
+
+MOCK_FORECOURT_RESPONSE = {
+    "id": "GB-12345",
+    "name": "Shell Station",
+    "address": {
+        "line1": "123 High Street",
+        "city": "London",
+        "postcode": "SW1A 1AA"
+    },
+    "operator": "Shell UK",
+    "brand": "Shell",
+    "amenities": ["shop", "atm", "car_wash"],
+    "location": {
+        "latitude": 51.5074,
+        "longitude": -0.1278
+    }
+}
+```
+
+### Test Configuration
+
+**pytest Configuration** (`pytest.ini`)
+```ini
+[pytest]
+testpaths = tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+addopts = 
+    --verbose
+    --cov=ukfuelfinder
+    --cov-report=html
+    --cov-report=term-missing
+    --cov-fail-under=80
+markers =
+    unit: Unit tests
+    integration: Integration tests
+    slow: Slow running tests
+```
+
+**Test Conftest** (`tests/conftest.py`)
+```python
+import pytest
+from ukfuelfinder import FuelFinderClient
+from tests.fixtures.responses import *
+
+@pytest.fixture
+def mock_client():
+    """Provide a client with mocked HTTP calls"""
+    return FuelFinderClient(
+        client_id="test_id",
+        client_secret="test_secret",
+        environment="test"
+    )
+
+@pytest.fixture
+def mock_auth_response():
+    """Provide mock authentication response"""
+    return MOCK_TOKEN_RESPONSE
+
+@pytest.fixture
+def vcr_config():
+    """Configure VCR for recording HTTP interactions"""
+    return {
+        "filter_headers": ["authorization"],
+        "record_mode": "once"
+    }
+```
+
+### Continuous Integration
+
+**GitHub Actions Workflow** (`.github/workflows/test.yml`)
+```yaml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -e .[dev]
+    - name: Run tests
+      run: |
+        pytest
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+```
+
+---
+
+## Examples
+
+### Basic Usage Example (`examples/basic_usage.py`)
+
+```python
+"""
+Basic usage example for UK Fuel Finder API
+"""
+from ukfuelfinder import FuelFinderClient
+
+# Initialize client with credentials
+client = FuelFinderClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    environment="production"
+)
+
+# Get all fuel prices
+prices = client.get_prices()
+print(f"Found {len(prices['data'])} prices")
+
+# Get prices for specific fuel type
+unleaded_prices = client.get_prices(fuel_type="unleaded")
+for price in unleaded_prices['data']:
+    print(f"{price['forecourt_id']}: £{price['price']}")
+
+# Get specific forecourt details
+forecourt = client.get_forecourt("GB-12345")
+print(f"Forecourt: {forecourt['name']}")
+print(f"Address: {forecourt['address']['postcode']}")
+print(f"Amenities: {', '.join(forecourt['amenities'])}")
+```
+
+### Advanced Filtering Example (`examples/advanced_filtering.py`)
+
+```python
+"""
+Advanced filtering and location-based search
+"""
+from ukfuelfinder import FuelFinderClient
+
+client = FuelFinderClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret"
+)
+
+# Find cheapest diesel within 5km of London
+prices = client.get_prices(
+    fuel_type="diesel",
+    latitude=51.5074,
+    longitude=-0.1278,
+    radius=5000  # meters
+)
+
+# Sort by price
+sorted_prices = sorted(prices['data'], key=lambda x: x['price'])
+
+# Display top 5 cheapest
+print("Top 5 cheapest diesel prices near London:")
+for i, price in enumerate(sorted_prices[:5], 1):
+    forecourt = client.get_forecourt(price['forecourt_id'])
+    print(f"{i}. {forecourt['name']}: £{price['price']}")
+    print(f"   {forecourt['address']['postcode']}")
+
+# Find forecourts with specific amenities
+forecourts = client.get_forecourts(
+    latitude=51.5074,
+    longitude=-0.1278,
+    radius=10000
+)
+
+# Filter for forecourts with car wash and shop
+filtered = [
+    f for f in forecourts['data']
+    if 'car_wash' in f['amenities'] and 'shop' in f['amenities']
+]
+
+print(f"\nFound {len(filtered)} forecourts with car wash and shop")
+```
+
+### Caching Example (`examples/caching_example.py`)
+
+```python
+"""
+Demonstrate caching behavior
+"""
+from ukfuelfinder import FuelFinderClient
+import time
+
+client = FuelFinderClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    cache_enabled=True
+)
+
+# First request - hits API
+print("First request (API call)...")
+start = time.time()
+prices = client.get_prices(fuel_type="unleaded")
+print(f"Took {time.time() - start:.2f}s")
+
+# Second request - uses cache
+print("\nSecond request (cached)...")
+start = time.time()
+prices = client.get_prices(fuel_type="unleaded")
+print(f"Took {time.time() - start:.2f}s")
+
+# Custom cache TTL
+client.set_cache_ttl("prices", 300)  # 5 minutes
+
+# Clear cache
+client.clear_cache()
+print("\nCache cleared")
+
+# Disable cache for specific request
+prices = client.get_prices(fuel_type="diesel", use_cache=False)
+```
+
+### Error Handling Example (`examples/error_handling.py`)
+
+```python
+"""
+Comprehensive error handling
+"""
+from ukfuelfinder import FuelFinderClient
+from ukfuelfinder.exceptions import (
+    AuthenticationError,
+    NotFoundError,
+    RateLimitError,
+    TimeoutError,
+    ServerError
+)
+
+client = FuelFinderClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret"
+)
+
+# Handle authentication errors
+try:
+    prices = client.get_prices()
+except AuthenticationError as e:
+    print(f"Authentication failed: {e}")
+    print("Check your credentials")
+
+# Handle not found errors
+try:
+    forecourt = client.get_forecourt("INVALID-ID")
+except NotFoundError as e:
+    print(f"Forecourt not found: {e}")
+
+# Handle rate limiting
+try:
+    for i in range(200):
+        prices = client.get_prices(page=i)
+except RateLimitError as e:
+    print(f"Rate limit exceeded: {e}")
+    print(f"Retry after: {e.retry_after} seconds")
+
+# Handle timeouts
+try:
+    client_with_short_timeout = FuelFinderClient(
+        client_id="your_client_id",
+        client_secret="your_client_secret",
+        timeout=1  # 1 second
+    )
+    prices = client_with_short_timeout.get_prices()
+except TimeoutError as e:
+    print(f"Request timed out: {e}")
+
+# Handle server errors with retry
+try:
+    prices = client.get_prices()
+except ServerError as e:
+    print(f"Server error after retries: {e}")
+```
+
+### Async Usage Example (`examples/async_usage.py`)
+
+```python
+"""
+Asynchronous usage (future enhancement)
+"""
+import asyncio
+from ukfuelfinder import AsyncFuelFinderClient
+
+async def main():
+    client = AsyncFuelFinderClient(
+        client_id="your_client_id",
+        client_secret="your_client_secret"
+    )
+    
+    # Concurrent requests
+    prices_task = client.get_prices(fuel_type="unleaded")
+    forecourts_task = client.get_forecourts()
+    
+    prices, forecourts = await asyncio.gather(
+        prices_task,
+        forecourts_task
+    )
+    
+    print(f"Prices: {len(prices['data'])}")
+    print(f"Forecourts: {len(forecourts['data'])}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+---
+
+## Documentation Structure
+
+### README.md
+
+```markdown
+# UK Fuel Finder Python Library
+
+Python library for accessing the UK Government Fuel Finder API.
+
+## Features
+
+- OAuth 2.0 authentication with automatic token refresh
+- Comprehensive fuel price and forecourt data access
+- Built-in caching to reduce API calls
+- Rate limiting with automatic retry
+- Type hints for better IDE support
+- Extensive error handling
+
+## Installation
+
+```bash
+pip install ukfuelfinder
+```
+
+## Quick Start
+
+```python
+from ukfuelfinder import FuelFinderClient
+
+client = FuelFinderClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret"
+)
+
+prices = client.get_prices(fuel_type="unleaded")
+```
+
+## Documentation
+
+- [Quick Start Guide](docs/quickstart.md)
+- [API Reference](docs/api_reference.md)
+- [Authentication](docs/authentication.md)
+- [Examples](docs/examples.md)
+
+## Requirements
+
+- Python 3.8+
+- Valid Fuel Finder API credentials
+
+## License
+
+MIT License
+```
+
+### Quick Start Guide (`docs/quickstart.md`)
+
+```markdown
+# Quick Start Guide
+
+## Installation
+
+Install via pip:
+
+```bash
+pip install ukfuelfinder
+```
+
+## Get API Credentials
+
+1. Visit https://developer.fuel-finder.service.gov.uk
+2. Create a GOV.UK One Login
+3. Register your application
+4. Obtain client ID and secret
+
+## Basic Usage
+
+### Initialize Client
+
+```python
+from ukfuelfinder import FuelFinderClient
+
+client = FuelFinderClient(
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    environment="production"  # or "test"
+)
+```
+
+### Get Fuel Prices
+
+```python
+# All prices
+prices = client.get_prices()
+
+# Filter by fuel type
+unleaded = client.get_prices(fuel_type="unleaded")
+diesel = client.get_prices(fuel_type="diesel")
+
+# Filter by location
+nearby = client.get_prices(
+    latitude=51.5074,
+    longitude=-0.1278,
+    radius=5000  # meters
+)
+```
+
+### Get Forecourt Information
+
+```python
+# All forecourts
+forecourts = client.get_forecourts()
+
+# Specific forecourt
+forecourt = client.get_forecourt("GB-12345")
+
+# Forecourts near location
+nearby = client.get_forecourts(
+    latitude=51.5074,
+    longitude=-0.1278,
+    radius=10000
+)
+```
+
+## Environment Variables
+
+Set credentials via environment variables:
+
+```bash
+export FUEL_FINDER_CLIENT_ID="your_client_id"
+export FUEL_FINDER_CLIENT_SECRET="your_client_secret"
+export FUEL_FINDER_ENVIRONMENT="production"
+```
+
+Then initialize without parameters:
+
+```python
+client = FuelFinderClient()
+```
+
+## Next Steps
+
+- [API Reference](api_reference.md)
+- [Error Handling](error_handling.md)
+- [Caching Guide](caching.md)
+- [Examples](examples.md)
+```
+
+### API Reference (`docs/api_reference.md`)
+
+```markdown
+# API Reference
+
+## FuelFinderClient
+
+Main client class for interacting with the Fuel Finder API.
+
+### Constructor
+
+```python
+FuelFinderClient(
+    client_id: str = None,
+    client_secret: str = None,
+    environment: str = "production",
+    cache_enabled: bool = True,
+    timeout: int = 30
+)
+```
+
+**Parameters:**
+- `client_id`: OAuth client ID (reads from env if not provided)
+- `client_secret`: OAuth client secret (reads from env if not provided)
+- `environment`: "production" or "test"
+- `cache_enabled`: Enable response caching
+- `timeout`: Request timeout in seconds
+
+### Methods
+
+#### get_prices()
+
+```python
+get_prices(
+    fuel_type: str = None,
+    latitude: float = None,
+    longitude: float = None,
+    radius: int = None,
+    page: int = 1,
+    per_page: int = 20,
+    use_cache: bool = True
+) -> dict
+```
+
+Get fuel prices with optional filters.
+
+**Parameters:**
+- `fuel_type`: Filter by fuel type (unleaded, diesel, etc.)
+- `latitude`: Latitude for location filtering
+- `longitude`: Longitude for location filtering
+- `radius`: Search radius in meters
+- `page`: Page number for pagination
+- `per_page`: Results per page
+- `use_cache`: Use cached response if available
+
+**Returns:** Dictionary with price data and pagination info
+
+**Raises:**
+- `AuthenticationError`: Invalid credentials
+- `RateLimitError`: Rate limit exceeded
+- `TimeoutError`: Request timeout
+
+#### get_price()
+
+```python
+get_price(price_id: str) -> dict
+```
+
+Get specific price by ID.
+
+**Parameters:**
+- `price_id`: Unique price identifier
+
+**Returns:** Price details dictionary
+
+**Raises:**
+- `NotFoundError`: Price not found
+
+#### get_forecourts()
+
+```python
+get_forecourts(
+    latitude: float = None,
+    longitude: float = None,
+    radius: int = None,
+    operator: str = None,
+    page: int = 1,
+    per_page: int = 20,
+    use_cache: bool = True
+) -> dict
+```
+
+Get forecourts with optional filters.
+
+**Parameters:**
+- `latitude`: Latitude for location filtering
+- `longitude`: Longitude for location filtering
+- `radius`: Search radius in meters
+- `operator`: Filter by operator name
+- `page`: Page number
+- `per_page`: Results per page
+- `use_cache`: Use cached response
+
+**Returns:** Dictionary with forecourt data
+
+#### get_forecourt()
+
+```python
+get_forecourt(forecourt_id: str) -> dict
+```
+
+Get specific forecourt by ID.
+
+**Parameters:**
+- `forecourt_id`: Unique forecourt identifier
+
+**Returns:** Forecourt details dictionary
+
+#### clear_cache()
+
+```python
+clear_cache() -> None
+```
+
+Clear all cached responses.
+
+#### set_cache_ttl()
+
+```python
+set_cache_ttl(resource_type: str, ttl: int) -> None
+```
+
+Set cache TTL for resource type.
+
+**Parameters:**
+- `resource_type`: "prices" or "forecourts"
+- `ttl`: Time to live in seconds
+
+## Exceptions
+
+### FuelFinderError
+
+Base exception for all library errors.
+
+### AuthenticationError
+
+Raised when authentication fails.
+
+### NotFoundError
+
+Raised when requested resource not found.
+
+### RateLimitError
+
+Raised when rate limit exceeded.
+
+**Attributes:**
+- `retry_after`: Seconds to wait before retry
+
+### TimeoutError
+
+Raised when request times out.
+
+### ServerError
+
+Raised when API returns 5xx error.
+
+### ResponseParseError
+
+Raised when response cannot be parsed.
+```
+
+### Authentication Guide (`docs/authentication.md`)
+
+```markdown
+# Authentication Guide
+
+## OAuth 2.0 Client Credentials
+
+The Fuel Finder API uses OAuth 2.0 client credentials flow.
+
+## Getting Credentials
+
+1. Visit https://developer.fuel-finder.service.gov.uk
+2. Sign in with GOV.UK One Login
+3. Create an application
+4. Note your client ID and secret
+
+## Environments
+
+### Test Environment
+- URL: https://test-api.fuelfinder.service.gov.uk
+- Rate limit: 30 requests/minute
+- Use for development and testing
+
+### Production Environment
+- URL: https://api.fuelfinder.service.gov.uk
+- Rate limit: 120 requests/minute
+- Use for live applications
+
+## Token Management
+
+The library handles tokens automatically:
+
+- Obtains token on first request
+- Caches token in memory
+- Refreshes before expiry
+- Retries on authentication failure
+
+## Security Best Practices
+
+### Store Credentials Securely
+
+**Environment Variables (Recommended)**
+```bash
+export FUEL_FINDER_CLIENT_ID="your_id"
+export FUEL_FINDER_CLIENT_SECRET="your_secret"
+```
+
+**Config File**
+```yaml
+# config.yaml (add to .gitignore)
+client_id: your_id
+client_secret: your_secret
+```
+
+### Never Commit Credentials
+
+Add to `.gitignore`:
+```
+config.yaml
+.env
+*.secret
+```
+
+### Rotate Credentials Regularly
+
+Update credentials every 90 days or immediately if compromised.
+
+### Use Separate Credentials Per Environment
+
+Don't use production credentials in test environment.
+```
+
+### Caching Guide (`docs/caching.md`)
+
+```markdown
+# Caching Guide
+
+## Overview
+
+The library caches API responses to reduce redundant requests and improve performance.
+
+## Default Cache TTL
+
+- **Forecourts**: 1 hour (3600 seconds)
+- **Prices**: 15 minutes (900 seconds)
+
+## Enable/Disable Caching
+
+```python
+# Disable caching
+client = FuelFinderClient(
+    client_id="...",
+    client_secret="...",
+    cache_enabled=False
+)
+
+# Enable caching (default)
+client = FuelFinderClient(
+    client_id="...",
+    client_secret="...",
+    cache_enabled=True
+)
+```
+
+## Custom Cache TTL
+
+```python
+# Set custom TTL for prices (5 minutes)
+client.set_cache_ttl("prices", 300)
+
+# Set custom TTL for forecourts (2 hours)
+client.set_cache_ttl("forecourts", 7200)
+```
+
+## Clear Cache
+
+```python
+# Clear all cached data
+client.clear_cache()
+```
+
+## Bypass Cache
+
+```python
+# Force fresh data from API
+prices = client.get_prices(use_cache=False)
+```
+
+## Cache Key Generation
+
+Cache keys are generated from:
+- Endpoint path
+- Query parameters (sorted)
+
+Example: `prices:fuel_type=unleaded&page=1`
+
+## Performance Impact
+
+With caching enabled:
+- 80-90% reduction in API calls
+- 10-50x faster response times
+- Reduced rate limit usage
+```
+
+### Rate Limiting Guide (`docs/rate_limiting.md`)
+
+```markdown
+# Rate Limiting Guide
+
+## Rate Limits
+
+### Test Environment
+- 30 requests per minute
+- 5,000 requests per day
+- 1 concurrent request
+
+### Production Environment
+- 120 requests per minute
+- 10,000 requests per day
+- 2 concurrent requests
+
+## Automatic Handling
+
+The library handles rate limits automatically:
+
+1. Tracks request count
+2. Implements exponential backoff on 429 errors
+3. Respects Retry-After header
+4. Retries up to 3 times
+
+## Rate Limit Errors
+
+```python
+from ukfuelfinder.exceptions import RateLimitError
+
+try:
+    prices = client.get_prices()
+except RateLimitError as e:
+    print(f"Rate limit exceeded")
+    print(f"Retry after {e.retry_after} seconds")
+```
+
+## Best Practices
+
+### Use Caching
+
+Enable caching to reduce API calls:
+```python
+client = FuelFinderClient(cache_enabled=True)
+```
+
+### Batch Requests
+
+Request multiple pages efficiently:
+```python
+for page in range(1, 10):
+    prices = client.get_prices(page=page)
+    time.sleep(0.5)  # Pace requests
+```
+
+### Monitor Usage
+
+Track your API usage to stay within limits.
+
+## Request Higher Limits
+
+Contact the Fuel Finder team if you need higher limits for approved use cases.
+```
