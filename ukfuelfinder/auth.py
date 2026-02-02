@@ -60,9 +60,15 @@ class OAuth2Authenticator:
             response.raise_for_status()
             data = response.json()
 
-            self._access_token = data["access_token"]
-            self._refresh_token = data.get("refresh_token")
-            self._token_expiry = time.time() + data["expires_in"]
+            # Handle nested response structure
+            if "data" in data:
+                token_data = data["data"]
+            else:
+                token_data = data
+
+            self._access_token = token_data["access_token"]
+            self._refresh_token = token_data.get("refresh_token")
+            self._token_expiry = time.time() + token_data["expires_in"]
 
             return self._access_token
 
@@ -88,9 +94,15 @@ class OAuth2Authenticator:
             response.raise_for_status()
             data = response.json()
 
-            self._access_token = data["access_token"]
-            self._refresh_token = data.get("refresh_token", self._refresh_token)
-            self._token_expiry = time.time() + data["expires_in"]
+            # Handle nested response structure
+            if "data" in data:
+                token_data = data["data"]
+            else:
+                token_data = data
+
+            self._access_token = token_data["access_token"]
+            self._refresh_token = token_data.get("refresh_token", self._refresh_token)
+            self._token_expiry = time.time() + token_data["expires_in"]
 
             return self._access_token
 
