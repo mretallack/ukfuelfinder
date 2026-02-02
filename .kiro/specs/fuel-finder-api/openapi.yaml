@@ -136,24 +136,13 @@ paths:
       description: |
         Fetch fuel prices from Petrol Filling Stations.
         
-        **Full Fetch**: Omit the date_time parameter to fetch all current fuel prices.
+        **Full Fetch**: Omit the effective-start-timestamp parameter to fetch all current fuel prices.
         
-        **Incremental Fetch**: Provide the date_time parameter to fetch only prices updated since that date.
+        **Incremental Fetch**: Provide the effective-start-timestamp parameter to fetch only prices updated since that timestamp.
       operationId: getPfsPrices
       tags:
         - Prices
       parameters:
-        - name: date_time
-          in: query
-          required: false
-          description: |
-            Start date in YYYY-MM-DD format for incremental updates.
-            - If provided: Returns only prices updated since this date (incremental)
-            - If omitted: Returns all current fuel prices (full fetch)
-          schema:
-            type: string
-            format: date
-            example: "2025-09-05"
         - name: batch-number
           in: query
           required: false
@@ -164,7 +153,10 @@ paths:
         - name: effective-start-timestamp
           in: query
           required: false
-          description: Effective start timestamp in YYYY-MM-DD HH:MM:SS format
+          description: |
+            Timestamp in YYYY-MM-DD HH:MM:SS format for incremental updates.
+            - If provided: Returns only prices updated since this timestamp (incremental)
+            - If omitted: Returns all current fuel prices (full fetch)
           schema:
             type: string
             example: "2025-09-05 10:30:00"
@@ -174,9 +166,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PFS'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PFS'
         '401':
           description: Unauthorized - Invalid or missing token
           content:
@@ -196,14 +193,12 @@ paths:
       description: |
         Fetch PFS (Petrol Fuel Station) information including address, operator, brand, and amenities.
         
-        **Full Fetch**: Omit the date_time parameter to fetch all PFS information.
+        **Full Fetch**: Omit the effective-start-timestamp parameter to fetch all PFS information.
         
-        **Incremental Fetch**: Use /pfs/incremental endpoint with date_time parameter.
+        **Incremental Fetch**: Provide the effective-start-timestamp parameter to fetch only updated PFS information.
         
         **Pagination**: Each API response returns data for up to 500 forecourts. To retrieve additional 
-        forecourts, use the batch-number query parameter. For example:
-        - First call returns forecourts 0-500
-        - Second call with batch-number=2 returns forecourts 501-1000
+        forecourts, use the batch-number query parameter.
       operationId: getAllPfs
       tags:
         - Forecourts
@@ -213,22 +208,33 @@ paths:
           required: false
           description: |
             Batch number for pagination. Each batch returns up to 500 forecourts.
-            - batch-number=1 (or omitted): Returns forecourts 0-500
-            - batch-number=2: Returns forecourts 501-1000
-            - batch-number=3: Returns forecourts 1001-1500
           schema:
             type: integer
             minimum: 1
             example: 1
+        - name: effective-start-timestamp
+          in: query
+          required: false
+          description: |
+            Timestamp in YYYY-MM-DD HH:MM:SS format for incremental updates.
+            Returns only PFS records updated since this timestamp.
+          schema:
+            type: string
+            example: "2025-09-05 10:30:00"
       responses:
         '200':
           description: PFS info fetched successfully
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PFSInfo'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PFSInfo'
         '401':
           description: Unauthorized - Invalid or missing token
           content:
@@ -242,60 +248,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /pfs/incremental:
-    get:
-      summary: Fetch incremental PFS information
-      description: |
-        Fetch PFS information incrementally based on the provided effective start timestamp.
-        Returns only PFS records that have been updated since the specified date.
-      operationId: getIncrementalPfs
-      tags:
-        - Forecourts
-      parameters:
-        - name: date_time
-          in: query
-          required: true
-          description: Start date in YYYY-MM-DD format for incremental updates
-          schema:
-            type: string
-            format: date
-            example: "2025-09-05"
-        - name: batch-number
-          in: query
-          required: false
-          description: Batch number for pagination
-          schema:
-            type: integer
-            minimum: 1
-            example: 1
-        - name: effective-start-timestamp
-          in: query
-          required: false
-          description: Effective start timestamp in YYYY-MM-DD HH:MM:SS format
-          schema:
-            type: string
-            example: "2025-09-05 10:30:00"
-      responses:
-        '200':
-          description: Incremental PFS info fetched successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PFSInfo'
-        '401':
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
 components:
   securitySchemes:
@@ -366,7 +318,7 @@ components:
 
     PFSInfo:
       type: object
-      description: Petrol Filling Station information (without prices)
+      description: Petrol Filling Station information
       required:
         - node_id
         - mft_organisation_name
@@ -375,57 +327,72 @@ components:
         node_id:
           type: string
           description: Unique identifier for the PFS
-          example: "0028acef5f3afc41c7e7d"
         mft_organisation_name:
           type: string
           description: Motor Fuel Trader organization name
-          example: "Shell UK"
         trading_name:
           type: string
           description: Trading name of the station
-          example: "Shell Station"
         public_phone_number:
           type: string
           nullable: true
           description: Public contact phone number
-          example: "01234567890"
-        address:
+        is_same_trading_and_brand_name:
+          type: boolean
+          nullable: true
+        brand_name:
+          type: string
+          nullable: true
+        temporary_closure:
+          type: boolean
+          nullable: true
+        permanent_closure:
+          type: boolean
+          nullable: true
+        permanent_closure_date:
+          type: string
+          nullable: true
+        is_motorway_service_station:
+          type: boolean
+          nullable: true
+        is_supermarket_service_station:
+          type: boolean
+          nullable: true
+        location:
           type: object
-          description: Station address
+          description: Geographic location with full address
           properties:
-            line1:
+            address_line_1:
               type: string
-              example: "123 High Street"
-            line2:
+            address_line_2:
               type: string
               nullable: true
-              example: ""
             city:
               type: string
-              example: "London"
+            country:
+              type: string
             county:
               type: string
               nullable: true
-              example: "Greater London"
             postcode:
               type: string
-              example: "SW1A 1AA"
-        location:
-          type: object
-          description: Geographic coordinates
-          properties:
             latitude:
-              type: number
-              format: double
-              example: 51.5074
+              type: string
             longitude:
-              type: number
-              format: double
-              example: -0.1278
-        brand:
-          type: string
-          description: Station brand
-          example: "Shell"
+              type: string
+        amenities:
+          type: array
+          items:
+            type: string
+          description: Available amenities
+        opening_times:
+          type: object
+          description: Opening hours information
+        fuel_types:
+          type: array
+          items:
+            type: string
+          description: Available fuel types
         operator:
           type: string
           description: Station operator
@@ -454,35 +421,29 @@ components:
       description: Fuel price information
       required:
         - fuel_type
-        - price
-        - currency
-        - updated_at
       properties:
         fuel_type:
           type: string
           description: Type of fuel
           enum:
-            - unleaded
-            - super_unleaded
-            - diesel
-            - premium_diesel
-            - lpg
-          example: unleaded
+            - E10
+            - E5
+            - B7_STANDARD
+            - B7_PREMIUM
+            - B10
+            - HVO
+          example: E10
         price:
-          type: number
-          format: float
-          description: Price in pence per litre
-          example: 142.9
-        currency:
           type: string
-          description: Currency code
-          enum: [GBP]
-          example: GBP
-        updated_at:
+          nullable: true
+          description: Price in pence per litre (string format like "0120.0000")
+          example: "0142.9000"
+        price_last_updated:
           type: string
           format: date-time
+          nullable: true
           description: Timestamp when price was last updated
-          example: "2026-02-02T18:00:00Z"
+          example: "2026-02-02T18:00:00"
 
     Error:
       type: object
