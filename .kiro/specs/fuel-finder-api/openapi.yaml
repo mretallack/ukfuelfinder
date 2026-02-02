@@ -168,6 +168,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /pfs/incremental:
+    get:
+      summary: Fetch incremental PFS information
+      description: |
+        Fetch PFS information incrementally based on the provided effective start timestamp.
+        Returns only PFS records that have been updated since the specified date.
+      operationId: getIncrementalPfs
+      tags:
+        - Forecourts
+      parameters:
+        - name: date_time
+          in: query
+          required: true
+          description: Start date in YYYY-MM-DD format for incremental updates
+          schema:
+            type: string
+            format: date
+            example: "2025-09-05"
+        - name: batch-number
+          in: query
+          required: false
+          description: Batch number for pagination
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+        - name: effective-start-timestamp
+          in: query
+          required: false
+          description: Effective start timestamp in YYYY-MM-DD HH:MM:SS format
+          schema:
+            type: string
+            example: "2025-09-05 10:30:00"
+      responses:
+        '200':
+          description: Incremental PFS info fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PFSInfo'
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     OAuth2:

@@ -181,6 +181,12 @@ class PriceService:
 class ForecourtsService:
     def __init__(self, http_client: HTTPClient, cache: ResponseCache)
     def get_all_pfs(self, batch_number: int = None) -> List[PFSInfo]
+    def get_incremental_pfs(
+        self,
+        date_time: str,  # YYYY-MM-DD format
+        batch_number: int = None,
+        effective_start_timestamp: str = None
+    ) -> List[PFSInfo]
     def get_pfs_by_node_id(self, node_id: str) -> PFSInfo
     def get_all_pfs_paginated(self) -> Iterator[List[PFSInfo]]  # Auto-paginate through all batches
     def search_pfs(self, filters: dict) -> List[PFSInfo]
@@ -215,6 +221,7 @@ class FuelFinderClient:
     
     # Forecourt methods
     def get_all_pfs_info(self, batch_number: int = None, **kwargs) -> List[PFSInfo]
+    def get_incremental_pfs_info(self, since_date: str, **kwargs) -> List[PFSInfo]
     def get_pfs_info(self, node_id: str) -> PFSInfo
     def get_all_pfs_paginated(self) -> Iterator[List[PFSInfo]]  # Auto-paginate
     
@@ -642,6 +649,24 @@ components:
 
 **Responses**:
   - `200`: PFS info fetched successfully
+  - `401`: Unauthorized - Invalid or missing token
+  - `500`: Internal server error
+
+**Fetch Incremental PFS Information**
+- **Endpoint**: `GET /v1/pfs/incremental`
+- **Full URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs?batch-number=1&effective-start-timestamp=<YYYY-MM-DD HH:MM:SS>`
+- **Description**: Fetch PFS information incrementally based on the provided effective start timestamp
+- **Authorization**: Bearer token (OAuth 2.0)
+
+**Query Parameters**:
+- `date_time` (required): Start date in YYYY-MM-DD format
+  - Example: `date_time=2025-09-05`
+  - Returns only PFS records updated since this date
+- `batch-number`: Batch number for pagination
+- `effective-start-timestamp`: Effective start timestamp in YYYY-MM-DD HH:MM:SS format
+
+**Responses**:
+  - `200`: Incremental PFS info fetched successfully
   - `401`: Unauthorized - Invalid or missing token
   - `500`: Internal server error
 
