@@ -68,18 +68,24 @@ paths:
 
   /pfs/fuel-prices:
     get:
-      summary: Fetch all PFS fuel prices
+      summary: Fetch PFS fuel prices
       description: |
-        Fetch all fuel prices from Petrol Filling Stations with support for incremental updates.
-        Use the date_time parameter to fetch only prices updated since a specific date.
-      operationId: getAllPfsPrices
+        Fetch fuel prices from Petrol Filling Stations.
+        
+        **Full Fetch**: Omit the date_time parameter to fetch all current fuel prices.
+        
+        **Incremental Fetch**: Provide the date_time parameter to fetch only prices updated since that date.
+      operationId: getPfsPrices
       tags:
         - Prices
       parameters:
         - name: date_time
           in: query
-          required: true
-          description: Start date in YYYY-MM-DD format for incremental updates
+          required: false
+          description: |
+            Start date in YYYY-MM-DD format for incremental updates.
+            - If provided: Returns only prices updated since this date (incremental)
+            - If omitted: Returns all current fuel prices (full fetch)
           schema:
             type: string
             format: date
@@ -100,7 +106,7 @@ paths:
             example: "2025-09-05 10:30:00"
       responses:
         '200':
-          description: Incremental fuel prices fetched successfully
+          description: Fuel prices fetched successfully
           content:
             application/json:
               schema:
@@ -124,7 +130,11 @@ paths:
     get:
       summary: Fetch PFS information
       description: |
-        Fetch all PFS (Petrol Fuel Station) information including address, operator, brand, and amenities.
+        Fetch PFS (Petrol Fuel Station) information including address, operator, brand, and amenities.
+        
+        **Full Fetch**: Omit the date_time parameter to fetch all PFS information.
+        
+        **Incremental Fetch**: Use /pfs/incremental endpoint with date_time parameter.
         
         **Pagination**: Each API response returns data for up to 500 forecourts. To retrieve additional 
         forecourts, use the batch-number query parameter. For example:

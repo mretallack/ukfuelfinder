@@ -595,25 +595,30 @@ components:
 
 ### Information Recipient API
 
-**Fetch All PFS Fuel Prices (with Incremental Updates)**
+**1. Fetch PFS Fuel Prices (Full or Incremental)**
 - **Endpoint**: `GET /v1/pfs/fuel-prices`
-- **Full URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs/fuel-prices?batch-number=1&effective-start-timestamp=<YYYY-MM-DD HH:MM:SS>`
-- **Description**: Fetch all fuel prices from PFS (Petrol Filling Stations) with support for incremental updates
+- **Description**: Fetch fuel prices from PFS (Petrol Filling Stations)
 - **Authorization**: Bearer token (OAuth 2.0)
 
+**Usage Modes**:
+- **Full Fetch**: Omit `date_time` to get all current prices
+  - URL: `https://www.fuel-finder.service.gov.uk/api/v1/pfs/fuel-prices?batch-number=1`
+- **Incremental Fetch**: Include `date_time` to get only updated prices
+  - URL: `https://www.fuel-finder.service.gov.uk/api/v1/pfs/fuel-prices?date_time=2025-09-05&batch-number=1`
+
 **Query Parameters**:
-- `date_time` (required): Start date in YYYY-MM-DD format
-  - Example: `date_time=2025-09-05`
-  - Used for incremental updates - fetches prices updated since this date
-- `batch-number`: Batch identifier for pagination/chunking
-- `effective-start-timestamp`: Timestamp in YYYY-MM-DD HH:MM:SS format
+- `date_time` (optional): Start date in YYYY-MM-DD format
+  - If provided: Returns only prices updated since this date
+  - If omitted: Returns all current fuel prices
+- `batch-number` (optional): Batch identifier for pagination
+- `effective-start-timestamp` (optional): Timestamp in YYYY-MM-DD HH:MM:SS format
 
 **Responses**:
-  - `200`: Incremental fuel prices fetched successfully
-  - `401`: Unauthorized - Invalid or missing token
+  - `200`: Fuel prices fetched successfully
+  - `401`: Unauthorized
   - `500`: Internal server error
 
-**Response Schema (200)**:
+**Response Schema**:
 ```json
 [
   {
@@ -633,41 +638,38 @@ components:
 ]
 ```
 
-**Fetch PFS Information**
+**2. Fetch PFS Information (Full)**
 - **Endpoint**: `GET /v1/pfs`
-- **Full URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs?batch-number=1`
-- **Description**: Fetch all PFS (Petrol Fuel Station) information including address, operator, brand, and amenities
+- **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs?batch-number=1`
+- **Description**: Fetch all PFS information including address, operator, brand, and amenities
 - **Authorization**: Bearer token (OAuth 2.0)
 
-**Pagination**: Each API response returns data for up to 500 forecourts. To retrieve additional forecourts, use the `batch-number` query parameter:
-- First call (or `batch-number=1`): Returns forecourts 0-500
-- `batch-number=2`: Returns forecourts 501-1000
-- `batch-number=3`: Returns forecourts 1001-1500
+**Pagination**: Returns up to 500 forecourts per batch
+- `batch-number=1` (or omitted): Forecourts 0-500
+- `batch-number=2`: Forecourts 501-1000
 
 **Query Parameters**:
-- `batch-number`: Batch number for pagination (each batch = 500 forecourts)
+- `batch-number` (optional): Batch number for pagination
 
 **Responses**:
   - `200`: PFS info fetched successfully
-  - `401`: Unauthorized - Invalid or missing token
+  - `401`: Unauthorized
   - `500`: Internal server error
 
-**Fetch Incremental PFS Information**
+**3. Fetch PFS Information (Incremental)**
 - **Endpoint**: `GET /v1/pfs/incremental`
-- **Full URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs?batch-number=1&effective-start-timestamp=<YYYY-MM-DD HH:MM:SS>`
-- **Description**: Fetch PFS information incrementally based on the provided effective start timestamp
+- **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs/incremental?date_time=2025-09-05&batch-number=1`
+- **Description**: Fetch only PFS information updated since specified date
 - **Authorization**: Bearer token (OAuth 2.0)
 
 **Query Parameters**:
 - `date_time` (required): Start date in YYYY-MM-DD format
-  - Example: `date_time=2025-09-05`
-  - Returns only PFS records updated since this date
-- `batch-number`: Batch number for pagination
-- `effective-start-timestamp`: Effective start timestamp in YYYY-MM-DD HH:MM:SS format
+- `batch-number` (optional): Batch number for pagination
+- `effective-start-timestamp` (optional): Timestamp in YYYY-MM-DD HH:MM:SS format
 
 **Responses**:
   - `200`: Incremental PFS info fetched successfully
-  - `401`: Unauthorized - Invalid or missing token
+  - `401`: Unauthorized
   - `500`: Internal server error
 
 ### Forecourts/PFS Endpoints (assumed)
