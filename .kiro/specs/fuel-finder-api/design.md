@@ -160,10 +160,16 @@ Max retries: 3
 ```python
 class PriceService:
     def __init__(self, http_client: HTTPClient, cache: ResponseCache)
-    def get_all_pfs_prices(self, batch: str = None, updated_since: str = None) -> List[PFS]
+    def get_all_pfs_prices(
+        self, 
+        date_time: str = None,  # YYYY-MM-DD format
+        batch_number: int = None,
+        effective_start_timestamp: str = None  # YYYY-MM-DD HH:MM:SS
+    ) -> List[PFS]
     def get_pfs_by_node_id(self, node_id: str) -> PFS
     def search_prices(self, filters: dict) -> List[PFS]
     def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]
+    def get_incremental_updates(self, since: str) -> List[PFS]
 ```
 
 #### Forecourt Service (`services/forecourt_service.py`)
@@ -196,9 +202,15 @@ class FuelFinderClient:
     )
     
     # PFS and Price methods
-    def get_all_pfs_prices(self, batch: str = None, **kwargs) -> List[PFS]
+    def get_all_pfs_prices(
+        self, 
+        date_time: str = None,  # YYYY-MM-DD
+        batch_number: int = None,
+        **kwargs
+    ) -> List[PFS]
     def get_pfs(self, node_id: str) -> PFS
     def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]
+    def get_incremental_updates(self, since_date: str) -> List[PFS]
     
     # Forecourt methods (if separate endpoint exists)
     def get_forecourts(self, **kwargs) -> dict
@@ -331,14 +343,23 @@ cache:
 
 ### Information Recipient API
 
-**Fetch All PFS Fuel Prices**
+**Fetch All PFS Fuel Prices (with Incremental Updates)**
 - **Endpoint**: `GET /v1/pfs/fuel-prices`
-- **Description**: Fetch all fuel prices from PFS (Petrol Filling Stations)
+- **Full URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs/fuel-prices?batch-number=1&effective-start-timestamp=<YYYY-MM-DD HH:MM:SS>`
+- **Description**: Fetch all fuel prices from PFS (Petrol Filling Stations) with support for incremental updates
 - **Authorization**: Bearer token (OAuth 2.0)
-- **Responses**:
-  - `200`: Success - Returns array of PFS with fuel prices
+
+**Query Parameters**:
+- `date_time` (required): Start date in YYYY-MM-DD format
+  - Example: `date_time=2025-09-05`
+  - Used for incremental updates - fetches prices updated since this date
+- `batch-number`: Batch identifier for pagination/chunking
+- `effective-start-timestamp`: Timestamp in YYYY-MM-DD HH:MM:SS format
+
+**Responses**:
+  - `200`: Incremental fuel prices fetched successfully
   - `401`: Unauthorized - Invalid or missing token
-  - `500`: Server Error
+  - `500`: Internal server error
 
 **Response Schema (200)**:
 ```json
@@ -359,12 +380,6 @@ cache:
   }
 ]
 ```
-
-**Query Parameters**:
-- `batch`: Batch identifier for pagination/chunking
-- `fuel_type`: Filter by fuel type (unleaded, diesel, etc.)
-- `updated_since`: Incremental updates (ISO 8601 timestamp)
-- `page`, `per_page`: Pagination
 
 ### Forecourts/PFS Endpoints (assumed)
 - `GET /v1/forecourts` - List all forecourts/PFS stations
@@ -832,47 +847,45 @@ print(f"\nFound {len(unleaded_prices)} unleaded prices")
 
 ```python
 """
-Advanced filtering and location-based search
+Advanced filtering and incremental updates
 """
 from ukfuelfinder import FuelFinderClient
+from datetime import datetime, timedelta
 
 client = FuelFinderClient(
     client_id="your_client_id",
     client_secret="your_client_secret"
 )
 
-# Find cheapest diesel within 5km of London
-prices = client.get_prices(
-    fuel_type="diesel",
-    latitude=51.5074,
-    longitude=-0.1278,
-    radius=5000  # meters
-)
+# Get all current prices
+all_pfs = client.get_all_pfs_prices()
+print(f"Total stations: {len(all_pfs)}")
+
+# Get incremental updates since yesterday
+yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+updated_pfs = client.get_incremental_updates(since_date=yesterday)
+print(f"Stations updated since {yesterday}: {len(updated_pfs)}")
+
+# Get specific batch
+batch_1 = client.get_all_pfs_prices(batch_number=1)
+print(f"Batch 1 contains {len(batch_1)} stations")
+
+# Find cheapest diesel
+all_diesel = []
+for pfs in all_pfs:
+    for price in pfs.fuel_prices:
+        if price.fuel_type == "diesel":
+            all_diesel.append({
+                "station": pfs.trading_name,
+                "price": price.price,
+                "node_id": pfs.node_id
+            })
 
 # Sort by price
-sorted_prices = sorted(prices['data'], key=lambda x: x['price'])
-
-# Display top 5 cheapest
-print("Top 5 cheapest diesel prices near London:")
-for i, price in enumerate(sorted_prices[:5], 1):
-    forecourt = client.get_forecourt(price['forecourt_id'])
-    print(f"{i}. {forecourt['name']}: £{price['price']}")
-    print(f"   {forecourt['address']['postcode']}")
-
-# Find forecourts with specific amenities
-forecourts = client.get_forecourts(
-    latitude=51.5074,
-    longitude=-0.1278,
-    radius=10000
-)
-
-# Filter for forecourts with car wash and shop
-filtered = [
-    f for f in forecourts['data']
-    if 'car_wash' in f['amenities'] and 'shop' in f['amenities']
-]
-
-print(f"\nFound {len(filtered)} forecourts with car wash and shop")
+cheapest = sorted(all_diesel, key=lambda x: x["price"])[:10]
+print("\nTop 10 cheapest diesel prices:")
+for i, station in enumerate(cheapest, 1):
+    print(f"{i}. {station['station']}: £{station['price']}")
 ```
 
 ### Caching Example (`examples/caching_example.py`)
