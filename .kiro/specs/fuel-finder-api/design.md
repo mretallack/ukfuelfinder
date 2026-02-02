@@ -592,12 +592,25 @@ components:
 ### Token Endpoint
 - **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/generate_access_token`
 - **Method**: POST
-- **Content-Type**: application/json
+- **Content-Type**: application/json (Note: Documentation shows form-urlencoded, but actual API uses JSON)
 - **Request Body**:
 ```json
 {
   "client_id": "your_client_id",
   "client_secret": "your_client_secret"
+}
+```
+- **Response** (nested in `data` wrapper):
+```json
+{
+  "success": true,
+  "data": {
+    "access_token": "eyJhbGciOi...",
+    "token_type": "Bearer",
+    "expires_in": 3600,
+    "refresh_token": "..."
+  },
+  "message": "Operation successful"
 }
 ```
 - **Responses**:
