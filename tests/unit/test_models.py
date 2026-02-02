@@ -11,18 +11,16 @@ class TestModels:
     def test_fuel_price_from_dict(self):
         """Test FuelPrice creation from dictionary."""
         data = {
-            "fuel_type": "unleaded",
-            "price": 142.9,
-            "currency": "GBP",
-            "updated_at": "2026-02-02T18:00:00Z",
+            "fuel_type": "E10",
+            "price": "142.9000",
+            "price_last_updated": "2026-02-02T18:00:00",
         }
 
         price = FuelPrice.from_dict(data)
 
-        assert price.fuel_type == "unleaded"
+        assert price.fuel_type == "E10"
         assert price.price == 142.9
-        assert price.currency == "GBP"
-        assert isinstance(price.updated_at, datetime)
+        assert isinstance(price.price_last_updated, datetime)
 
     def test_pfs_from_dict(self, mock_pfs_response):
         """Test PFS creation from dictionary."""
@@ -34,30 +32,22 @@ class TestModels:
         assert len(pfs.fuel_prices) == 2
         assert pfs.fuel_prices[0].fuel_type == "unleaded"
 
-    def test_address_from_dict(self):
-        """Test Address creation from dictionary."""
-        data = {
-            "line1": "123 High Street",
-            "line2": None,
-            "city": "London",
-            "county": "Greater London",
-            "postcode": "SW1A 1AA",
-        }
-
-        address = Address.from_dict(data)
-
-        assert address.line1 == "123 High Street"
-        assert address.city == "London"
-        assert address.postcode == "SW1A 1AA"
-
     def test_location_from_dict(self):
         """Test Location creation from dictionary."""
-        data = {"latitude": 51.5074, "longitude": -0.1278}
+        data = {
+            "latitude": "51.5074",
+            "longitude": "-0.1278",
+            "address_line_1": "123 High Street",
+            "city": "London",
+            "postcode": "SW1A 1AA",
+            "country": "England"
+        }
 
         location = Location.from_dict(data)
 
         assert location.latitude == 51.5074
         assert location.longitude == -0.1278
+        assert location.address_line_1 == "123 High Street"
 
     def test_pfs_info_from_dict(self):
         """Test PFSInfo creation from dictionary."""
@@ -66,22 +56,24 @@ class TestModels:
             "mft_organisation_name": "Test Org",
             "trading_name": "Test Station",
             "public_phone_number": "01234567890",
-            "address": {
-                "line1": "123 Street",
-                "line2": None,
+            "brand_name": "TestBrand",
+            "is_supermarket_service_station": True,
+            "location": {
+                "latitude": "51.5",
+                "longitude": "-0.1",
+                "address_line_1": "123 Street",
                 "city": "London",
-                "county": None,
                 "postcode": "SW1A 1AA",
+                "country": "England"
             },
-            "location": {"latitude": 51.5, "longitude": -0.1},
-            "brand": "TestBrand",
-            "operator": "TestOp",
             "amenities": ["shop", "atm"],
+            "fuel_types": ["E10", "B7_STANDARD"]
         }
 
         pfs_info = PFSInfo.from_dict(data)
 
         assert pfs_info.node_id == "test123"
-        assert pfs_info.address.postcode == "SW1A 1AA"
+        assert pfs_info.location.postcode == "SW1A 1AA"
         assert pfs_info.location.latitude == 51.5
         assert "shop" in pfs_info.amenities
+        assert "E10" in pfs_info.fuel_types
