@@ -588,21 +588,35 @@ components:
 ### Token Endpoint
 - **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/generate_access_token`
 - **Method**: POST
-- **Flow**: OAuth 2.0 Client Credentials
-- **Content-Type**: application/x-www-form-urlencoded
-- **Parameters**:
-  - `grant_type`: `client_credentials`
-  - `client_id`: Your client ID
-  - `client_secret`: Your client secret
+- **Content-Type**: application/json
+- **Request Body**:
+```json
+{
+  "client_id": "your_client_id",
+  "client_secret": "your_client_secret"
+}
+```
+- **Responses**:
+  - 200: Access token generated successfully
+  - 400: Invalid request payload
+  - 401: Invalid client credentials
+  - 500: Internal server error
 
 ### Refresh Token Endpoint
 - **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/refresh_token`
 - **Method**: POST
-- **Flow**: OAuth 2.0 Refresh Token
-- **Content-Type**: application/x-www-form-urlencoded
-- **Parameters**:
-  - `grant_type`: `refresh_token`
-  - `refresh_token`: Your refresh token from initial authentication
+- **Content-Type**: application/json
+- **Request Body**:
+```json
+{
+  "refresh_token": "your_refresh_token"
+}
+```
+- **Responses**:
+  - 200: Access token refreshed successfully
+  - 400: Invalid request payload
+  - 401: Invalid or expired refresh token
+  - 500: Internal server error
 
 ### Information Recipient API
 

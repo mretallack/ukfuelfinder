@@ -34,18 +34,13 @@ paths:
       requestBody:
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
               required:
-                - grant_type
                 - client_id
                 - client_secret
               properties:
-                grant_type:
-                  type: string
-                  enum: [client_credentials]
-                  example: client_credentials
                 client_id:
                   type: string
                   description: Your OAuth client ID
@@ -61,8 +56,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
-          description: Invalid credentials
+          description: Unauthorized - Invalid client credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -81,17 +88,12 @@ paths:
       requestBody:
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
               required:
-                - grant_type
                 - refresh_token
               properties:
-                grant_type:
-                  type: string
-                  enum: [refresh_token]
-                  example: refresh_token
                 refresh_token:
                   type: string
                   description: The refresh token received from initial authentication
@@ -103,8 +105,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
