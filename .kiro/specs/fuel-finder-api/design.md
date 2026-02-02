@@ -174,15 +174,16 @@ class PriceService:
 
 #### Forecourt Service (`services/forecourt_service.py`)
 
-**Responsibility**: Business logic for forecourt operations
+**Responsibility**: Business logic for forecourt/PFS information operations
 
 **Key Methods**:
 ```python
 class ForecourtsService:
     def __init__(self, http_client: HTTPClient, cache: ResponseCache)
-    def get_forecourts(self, location: dict = None, page: int = 1) -> dict
-    def get_forecourt_by_id(self, forecourt_id: str) -> dict
-    def search_forecourts(self, filters: dict) -> dict
+    def get_all_pfs(self, batch_number: int = None) -> List[PFSInfo]
+    def get_pfs_by_node_id(self, node_id: str) -> PFSInfo
+    def get_all_pfs_paginated(self) -> Iterator[List[PFSInfo]]  # Auto-paginate through all batches
+    def search_pfs(self, filters: dict) -> List[PFSInfo]
 ```
 
 ### 6. Client Interface (`client.py`)
@@ -212,9 +213,10 @@ class FuelFinderClient:
     def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]
     def get_incremental_updates(self, since_date: str) -> List[PFS]
     
-    # Forecourt methods (if separate endpoint exists)
-    def get_forecourts(self, **kwargs) -> dict
-    def get_forecourt(self, forecourt_id: str) -> dict
+    # Forecourt methods
+    def get_all_pfs_info(self, batch_number: int = None, **kwargs) -> List[PFSInfo]
+    def get_pfs_info(self, node_id: str) -> PFSInfo
+    def get_all_pfs_paginated(self) -> Iterator[List[PFSInfo]]  # Auto-paginate
     
     # Utility methods
     def clear_cache(self) -> None
@@ -623,6 +625,25 @@ components:
   }
 ]
 ```
+
+**Fetch PFS Information**
+- **Endpoint**: `GET /v1/pfs`
+- **Full URL**: `https://www.fuel-finder.service.gov.uk/api/v1/pfs?batch-number=1`
+- **Description**: Fetch all PFS (Petrol Fuel Station) information including address, operator, brand, and amenities
+- **Authorization**: Bearer token (OAuth 2.0)
+
+**Pagination**: Each API response returns data for up to 500 forecourts. To retrieve additional forecourts, use the `batch-number` query parameter:
+- First call (or `batch-number=1`): Returns forecourts 0-500
+- `batch-number=2`: Returns forecourts 501-1000
+- `batch-number=3`: Returns forecourts 1001-1500
+
+**Query Parameters**:
+- `batch-number`: Batch number for pagination (each batch = 500 forecourts)
+
+**Responses**:
+  - `200`: PFS info fetched successfully
+  - `401`: Unauthorized - Invalid or missing token
+  - `500`: Internal server error
 
 ### Forecourts/PFS Endpoints (assumed)
 - `GET /v1/forecourts` - List all forecourts/PFS stations

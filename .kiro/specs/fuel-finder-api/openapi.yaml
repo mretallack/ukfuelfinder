@@ -120,6 +120,54 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /pfs:
+    get:
+      summary: Fetch PFS information
+      description: |
+        Fetch all PFS (Petrol Fuel Station) information including address, operator, brand, and amenities.
+        
+        **Pagination**: Each API response returns data for up to 500 forecourts. To retrieve additional 
+        forecourts, use the batch-number query parameter. For example:
+        - First call returns forecourts 0-500
+        - Second call with batch-number=2 returns forecourts 501-1000
+      operationId: getAllPfs
+      tags:
+        - Forecourts
+      parameters:
+        - name: batch-number
+          in: query
+          required: false
+          description: |
+            Batch number for pagination. Each batch returns up to 500 forecourts.
+            - batch-number=1 (or omitted): Returns forecourts 0-500
+            - batch-number=2: Returns forecourts 501-1000
+            - batch-number=3: Returns forecourts 1001-1500
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: PFS info fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PFSInfo'
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     OAuth2:
@@ -182,6 +230,91 @@ components:
           description: Array of fuel prices at this station
           items:
             $ref: '#/components/schemas/FuelPrice'
+
+    PFSInfo:
+      type: object
+      description: Petrol Filling Station information (without prices)
+      required:
+        - node_id
+        - mft_organisation_name
+        - trading_name
+      properties:
+        node_id:
+          type: string
+          description: Unique identifier for the PFS
+          example: "0028acef5f3afc41c7e7d"
+        mft_organisation_name:
+          type: string
+          description: Motor Fuel Trader organization name
+          example: "Shell UK"
+        trading_name:
+          type: string
+          description: Trading name of the station
+          example: "Shell Station"
+        public_phone_number:
+          type: string
+          nullable: true
+          description: Public contact phone number
+          example: "01234567890"
+        address:
+          type: object
+          description: Station address
+          properties:
+            line1:
+              type: string
+              example: "123 High Street"
+            line2:
+              type: string
+              nullable: true
+              example: ""
+            city:
+              type: string
+              example: "London"
+            county:
+              type: string
+              nullable: true
+              example: "Greater London"
+            postcode:
+              type: string
+              example: "SW1A 1AA"
+        location:
+          type: object
+          description: Geographic coordinates
+          properties:
+            latitude:
+              type: number
+              format: double
+              example: 51.5074
+            longitude:
+              type: number
+              format: double
+              example: -0.1278
+        brand:
+          type: string
+          description: Station brand
+          example: "Shell"
+        operator:
+          type: string
+          description: Station operator
+          example: "Shell UK"
+        amenities:
+          type: array
+          description: Available amenities
+          items:
+            type: string
+            enum:
+              - shop
+              - atm
+              - car_wash
+              - air_pump
+              - toilet
+              - disabled_access
+              - ev_charging
+          example: ["shop", "atm", "car_wash"]
+        opening_hours:
+          type: object
+          description: Opening hours information
+          additionalProperties: true
 
     FuelPrice:
       type: object
