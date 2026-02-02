@@ -160,9 +160,10 @@ Max retries: 3
 ```python
 class PriceService:
     def __init__(self, http_client: HTTPClient, cache: ResponseCache)
-    def get_prices(self, fuel_type: str = None, location: dict = None, page: int = 1) -> dict
-    def get_price_by_id(self, price_id: str) -> dict
-    def search_prices(self, filters: dict) -> dict
+    def get_all_pfs_prices(self, batch: str = None, updated_since: str = None) -> List[PFS]
+    def get_pfs_by_node_id(self, node_id: str) -> PFS
+    def search_prices(self, filters: dict) -> List[PFS]
+    def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]
 ```
 
 #### Forecourt Service (`services/forecourt_service.py`)
@@ -194,11 +195,12 @@ class FuelFinderClient:
         timeout: int = 30
     )
     
-    # Price methods
-    def get_prices(self, **kwargs) -> dict
-    def get_price(self, price_id: str) -> dict
+    # PFS and Price methods
+    def get_all_pfs_prices(self, batch: str = None, **kwargs) -> List[PFS]
+    def get_pfs(self, node_id: str) -> PFS
+    def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]
     
-    # Forecourt methods
+    # Forecourt methods (if separate endpoint exists)
     def get_forecourts(self, **kwargs) -> dict
     def get_forecourt(self, forecourt_id: str) -> dict
     
@@ -238,19 +240,29 @@ class Config:
 ```
 
 ### Response Models
+
+**PFS (Petrol Filling Station) with Fuel Prices**
 ```python
 @dataclass
-class Price:
-    id: str
-    forecourt_id: str
+class FuelPrice:
     fuel_type: str
     price: float
     currency: str
     updated_at: datetime
+    # Additional fields from API
+
+@dataclass
+class PFS:
+    node_id: str  # Unique identifier
+    mft_organisation_name: str  # Motor Fuel Trader organization
+    trading_name: str  # Station trading name
+    public_phone_number: Optional[str]
+    fuel_prices: List[FuelPrice]
+    # Additional fields from full response
 
 @dataclass
 class Forecourt:
-    id: str
+    node_id: str
     name: str
     address: dict
     operator: str
@@ -320,18 +332,39 @@ cache:
 ### Information Recipient API
 
 **Fetch All PFS Fuel Prices**
-- **Endpoint**: `GET /v1/prices`
+- **Endpoint**: `GET /v1/pfs/fuel-prices`
 - **Description**: Fetch all fuel prices from PFS (Petrol Filling Stations)
 - **Authorization**: Bearer token (OAuth 2.0)
 - **Responses**:
-  - `200`: Success - Returns fuel prices data
+  - `200`: Success - Returns array of PFS with fuel prices
   - `401`: Unauthorized - Invalid or missing token
+  - `500`: Server Error
 
-**Query Parameters** (assumed based on typical patterns):
+**Response Schema (200)**:
+```json
+[
+  {
+    "node_id": "0028acef5f3afc41c7e7d",
+    "mft_organisation_name": "789 LTD",
+    "public_phone_number": null,
+    "trading_name": "FORECOURT 4",
+    "fuel_prices": [
+      {
+        "fuel_type": "unleaded",
+        "price": 142.9,
+        "currency": "GBP",
+        "updated_at": "2026-02-02T18:00:00Z"
+      }
+    ]
+  }
+]
+```
+
+**Query Parameters**:
+- `batch`: Batch identifier for pagination/chunking
 - `fuel_type`: Filter by fuel type (unleaded, diesel, etc.)
-- `latitude`, `longitude`, `radius`: Geographic filtering
-- `page`, `per_page`: Pagination
 - `updated_since`: Incremental updates (ISO 8601 timestamp)
+- `page`, `per_page`: Pagination
 
 ### Forecourts/PFS Endpoints (assumed)
 - `GET /v1/forecourts` - List all forecourts/PFS stations
@@ -774,20 +807,25 @@ client = FuelFinderClient(
     environment="production"
 )
 
-# Get all fuel prices
-prices = client.get_prices()
-print(f"Found {len(prices['data'])} prices")
+# Get all PFS with fuel prices
+pfs_list = client.get_all_pfs_prices()
+print(f"Found {len(pfs_list)} petrol filling stations")
 
-# Get prices for specific fuel type
-unleaded_prices = client.get_prices(fuel_type="unleaded")
-for price in unleaded_prices['data']:
-    print(f"{price['forecourt_id']}: £{price['price']}")
+# Display first few stations
+for pfs in pfs_list[:5]:
+    print(f"\n{pfs.trading_name} ({pfs.mft_organisation_name})")
+    print(f"Node ID: {pfs.node_id}")
+    for price in pfs.fuel_prices:
+        print(f"  {price.fuel_type}: £{price.price}")
 
-# Get specific forecourt details
-forecourt = client.get_forecourt("GB-12345")
-print(f"Forecourt: {forecourt['name']}")
-print(f"Address: {forecourt['address']['postcode']}")
-print(f"Amenities: {', '.join(forecourt['amenities'])}")
+# Get specific PFS by node ID
+pfs = client.get_pfs("0028acef5f3afc41c7e7d")
+print(f"\nStation: {pfs.trading_name}")
+print(f"Phone: {pfs.public_phone_number or 'N/A'}")
+
+# Get all unleaded prices
+unleaded_prices = client.get_prices_by_fuel_type("unleaded")
+print(f"\nFound {len(unleaded_prices)} unleaded prices")
 ```
 
 ### Advanced Filtering Example (`examples/advanced_filtering.py`)
