@@ -12,22 +12,25 @@ class FuelPrice:
     """Fuel price information."""
 
     fuel_type: str
-    price: float
-    currency: str = "GBP"  # Default to GBP
-    updated_at: Optional[datetime] = None
+    price: Optional[float]  # Can be null
+    price_last_updated: Optional[datetime] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "FuelPrice":
         """Create FuelPrice from API response dictionary."""
-        updated_at = None
-        if "updated_at" in data:
-            updated_at = parser.parse(data["updated_at"])
+        price = None
+        if data.get("price"):
+            # Price comes as string like "0120.0000"
+            price = float(data["price"])
+        
+        price_last_updated = None
+        if data.get("price_last_updated"):
+            price_last_updated = parser.parse(data["price_last_updated"])
         
         return cls(
             fuel_type=data["fuel_type"],
-            price=float(data["price"]),
-            currency=data.get("currency", "GBP"),
-            updated_at=updated_at,
+            price=price,
+            price_last_updated=price_last_updated,
         )
 
 

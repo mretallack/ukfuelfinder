@@ -87,7 +87,11 @@ class HTTPClient:
 
         if response.status_code == 200:
             try:
-                return response.json()
+                data = response.json()
+                # Handle nested response structure with "data" wrapper
+                if isinstance(data, dict) and "data" in data:
+                    return data["data"]
+                return data
             except ValueError as e:
                 raise ResponseParseError(f"Failed to parse JSON response: {e}")
 
