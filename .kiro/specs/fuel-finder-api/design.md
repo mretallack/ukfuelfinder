@@ -331,6 +331,249 @@ cache:
 - **Production**: `https://www.fuel-finder.service.gov.uk/api`
 - **Test**: `https://test.fuel-finder.service.gov.uk/api` (assumed)
 
+### OpenAPI Specification
+
+```yaml
+openapi: 3.0.3
+info:
+  title: UK Fuel Finder API
+  description: |
+    API to fetch fuel prices and PFS (Petrol Filling Station) information, including incremental updates.
+    
+    This API provides access to real-time fuel prices across all UK filling stations as required by 
+    The Motor Fuel Price (Open Data) Regulations 2025.
+  version: 1.0.0
+  contact:
+    name: Fuel Finder Support
+    url: https://www.developer.fuel-finder.service.gov.uk/contact-us
+
+servers:
+  - url: https://www.fuel-finder.service.gov.uk/api/v1
+    description: Production server
+  - url: https://test.fuel-finder.service.gov.uk/api/v1
+    description: Test server
+
+security:
+  - OAuth2: []
+
+paths:
+  /oauth/generate_access_token:
+    post:
+      summary: Generate OAuth 2.0 Access Token
+      description: Obtain an access token using OAuth 2.0 client credentials flow
+      operationId: generateAccessToken
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+                - client_id
+                - client_secret
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials]
+                  example: client_credentials
+                client_id:
+                  type: string
+                  description: Your OAuth client ID
+                  example: your_client_id
+                client_secret:
+                  type: string
+                  description: Your OAuth client secret
+                  example: your_client_secret
+      responses:
+        '200':
+          description: Access token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /pfs/fuel-prices:
+    get:
+      summary: Fetch all PFS fuel prices
+      description: |
+        Fetch all fuel prices from Petrol Filling Stations with support for incremental updates.
+        Use the date_time parameter to fetch only prices updated since a specific date.
+      operationId: getAllPfsPrices
+      tags:
+        - Prices
+      parameters:
+        - name: date_time
+          in: query
+          required: true
+          description: Start date in YYYY-MM-DD format for incremental updates
+          schema:
+            type: string
+            format: date
+            example: "2025-09-05"
+        - name: batch-number
+          in: query
+          required: false
+          description: Batch identifier for pagination/chunking
+          schema:
+            type: integer
+            example: 1
+        - name: effective-start-timestamp
+          in: query
+          required: false
+          description: Effective start timestamp in YYYY-MM-DD HH:MM:SS format
+          schema:
+            type: string
+            example: "2025-09-05 10:30:00"
+      responses:
+        '200':
+          description: Incremental fuel prices fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PFS'
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth 2.0 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: https://www.fuel-finder.service.gov.uk/api/v1/oauth/generate_access_token
+          scopes: {}
+
+  schemas:
+    TokenResponse:
+      type: object
+      required:
+        - access_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        token_type:
+          type: string
+          enum: [Bearer]
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Token expiry time in seconds
+          example: 3600
+
+    PFS:
+      type: object
+      description: Petrol Filling Station with fuel prices
+      required:
+        - node_id
+        - mft_organisation_name
+        - trading_name
+        - fuel_prices
+      properties:
+        node_id:
+          type: string
+          description: Unique identifier for the PFS
+          example: "0028acef5f3afc41c7e7d"
+        mft_organisation_name:
+          type: string
+          description: Motor Fuel Trader organization name
+          example: "789 LTD"
+        trading_name:
+          type: string
+          description: Trading name of the station
+          example: "FORECOURT 4"
+        public_phone_number:
+          type: string
+          nullable: true
+          description: Public contact phone number
+          example: "01234567890"
+        fuel_prices:
+          type: array
+          description: Array of fuel prices at this station
+          items:
+            $ref: '#/components/schemas/FuelPrice'
+
+    FuelPrice:
+      type: object
+      description: Fuel price information
+      required:
+        - fuel_type
+        - price
+        - currency
+        - updated_at
+      properties:
+        fuel_type:
+          type: string
+          description: Type of fuel
+          enum:
+            - unleaded
+            - super_unleaded
+            - diesel
+            - premium_diesel
+            - lpg
+          example: unleaded
+        price:
+          type: number
+          format: float
+          description: Price in pence per litre
+          example: 142.9
+        currency:
+          type: string
+          description: Currency code
+          enum: [GBP]
+          example: GBP
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when price was last updated
+          example: "2026-02-02T18:00:00Z"
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: unauthorized
+        message:
+          type: string
+          description: Human-readable error message
+          example: Invalid or expired access token
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+```
+
 ### Token Endpoint
 - **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/generate_access_token`
 - **Method**: POST
