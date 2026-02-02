@@ -24,7 +24,9 @@ paths:
   /oauth/generate_access_token:
     post:
       summary: Generate OAuth 2.0 Access Token
-      description: Obtain an access token using OAuth 2.0 client credentials flow
+      description: |
+        Generate an OAuth-style access token using client_id and client_secret.
+        The generated token is used to authenticate subsequent API requests within the Fuel Finder ecosystem.
       operationId: generateAccessToken
       tags:
         - Authentication
@@ -61,6 +63,48 @@ paths:
                 $ref: '#/components/schemas/TokenResponse'
         '401':
           description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /oauth/refresh_token:
+    post:
+      summary: Regenerate OAuth access token using refresh token
+      description: |
+        Regenerate an OAuth access token using a refresh token.
+        This allows obtaining a new access token without re-authenticating with client credentials.
+      operationId: refreshAccessToken
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+                - refresh_token
+              properties:
+                grant_type:
+                  type: string
+                  enum: [refresh_token]
+                  example: refresh_token
+                refresh_token:
+                  type: string
+                  description: The refresh token received from initial authentication
+                  example: your_refresh_token
+      responses:
+        '200':
+          description: Access token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid or expired refresh token
           content:
             application/json:
               schema:
@@ -263,6 +307,10 @@ components:
           type: integer
           description: Token expiry time in seconds
           example: 3600
+        refresh_token:
+          type: string
+          description: Refresh token for obtaining new access tokens (optional)
+          example: refresh_token_string
 
     PFS:
       type: object

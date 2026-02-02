@@ -42,11 +42,13 @@ class OAuth2Authenticator:
     def get_token(self) -> str
     def refresh_token(self) -> str
     def is_token_expired(self) -> bool
+    def _store_refresh_token(self, refresh_token: str) -> None
 ```
 
 **Token Management**:
-- Store token and expiry time in memory
+- Store access token and refresh token in memory
 - Automatically refresh 60 seconds before expiry
+- Use refresh token if available, otherwise re-authenticate
 - Thread-safe token access
 - Retry logic for token endpoint failures
 
@@ -592,6 +594,15 @@ components:
   - `grant_type`: `client_credentials`
   - `client_id`: Your client ID
   - `client_secret`: Your client secret
+
+### Refresh Token Endpoint
+- **URL**: `https://www.fuel-finder.service.gov.uk/api/v1/oauth/refresh_token`
+- **Method**: POST
+- **Flow**: OAuth 2.0 Refresh Token
+- **Content-Type**: application/x-www-form-urlencoded
+- **Parameters**:
+  - `grant_type`: `refresh_token`
+  - `refresh_token`: Your refresh token from initial authentication
 
 ### Information Recipient API
 
