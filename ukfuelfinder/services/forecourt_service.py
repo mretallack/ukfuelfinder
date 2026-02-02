@@ -46,37 +46,33 @@ class ForecourtService:
 
     def get_incremental_pfs(
         self,
-        date_time: str,
+        effective_start_timestamp: str,
         batch_number: Optional[int] = None,
-        effective_start_timestamp: Optional[str] = None,
         use_cache: bool = True,
     ) -> List[PFSInfo]:
         """
         Get incremental PFS information updates.
 
         Args:
-            date_time: Start date in YYYY-MM-DD format
-            batch_number: Batch number for pagination
             effective_start_timestamp: Timestamp in YYYY-MM-DD HH:MM:SS format
+            batch_number: Batch number for pagination
             use_cache: Whether to use cached response
 
         Returns:
             List of updated PFS information
         """
-        params: Dict[str, Any] = {"date_time": date_time}
+        params: Dict[str, Any] = {"effective-start-timestamp": effective_start_timestamp}
         if batch_number:
             params["batch-number"] = batch_number
-        if effective_start_timestamp:
-            params["effective-start-timestamp"] = effective_start_timestamp
 
-        cache_key = self.cache.generate_key("/pfs/incremental", params)
+        cache_key = self.cache.generate_key("/pfs", params)
 
         if use_cache:
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return [PFSInfo.from_dict(item) for item in cached]
 
-        response = self.http_client.get("/pfs/incremental", params=params)
+        response = self.http_client.get("/pfs", params=params)
         self.cache.set(cache_key, response, self.cache_ttl)
 
         return [PFSInfo.from_dict(item) for item in response]

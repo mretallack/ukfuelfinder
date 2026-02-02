@@ -61,9 +61,10 @@ class PFS:
 class Address:
     """Station address information."""
 
-    line1: str
-    line2: Optional[str]
+    address_line_1: str
+    address_line_2: Optional[str]
     city: str
+    country: str
     county: Optional[str]
     postcode: str
 
@@ -71,9 +72,10 @@ class Address:
     def from_dict(cls, data: Dict[str, Any]) -> "Address":
         """Create Address from API response dictionary."""
         return cls(
-            line1=data["line1"],
-            line2=data.get("line2"),
+            address_line_1=data["address_line_1"],
+            address_line_2=data.get("address_line_2"),
             city=data["city"],
+            country=data["country"],
             county=data.get("county"),
             postcode=data["postcode"],
         )
@@ -85,11 +87,26 @@ class Location:
 
     latitude: float
     longitude: float
+    address_line_1: Optional[str] = None
+    address_line_2: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    county: Optional[str] = None
+    postcode: Optional[str] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Location":
         """Create Location from API response dictionary."""
-        return cls(latitude=float(data["latitude"]), longitude=float(data["longitude"]))
+        return cls(
+            latitude=float(data["latitude"]),
+            longitude=float(data["longitude"]),
+            address_line_1=data.get("address_line_1"),
+            address_line_2=data.get("address_line_2"),
+            city=data.get("city"),
+            country=data.get("country"),
+            county=data.get("county"),
+            postcode=data.get("postcode"),
+        )
 
 
 @dataclass
@@ -100,17 +117,20 @@ class PFSInfo:
     mft_organisation_name: str
     trading_name: str
     public_phone_number: Optional[str]
-    address: Optional[Address] = None
+    is_same_trading_and_brand_name: Optional[bool] = None
+    brand_name: Optional[str] = None
+    temporary_closure: Optional[bool] = None
+    permanent_closure: Optional[bool] = None
+    permanent_closure_date: Optional[str] = None
+    is_motorway_service_station: Optional[bool] = None
+    is_supermarket_service_station: Optional[bool] = None
     location: Optional[Location] = None
-    brand: Optional[str] = None
-    operator: Optional[str] = None
     amenities: Optional[List[str]] = None
-    opening_hours: Optional[Dict[str, Any]] = None
+    opening_times: Optional[Dict[str, Any]] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "PFSInfo":
         """Create PFSInfo from API response dictionary."""
-        address = Address.from_dict(data["address"]) if "address" in data else None
         location = Location.from_dict(data["location"]) if "location" in data else None
 
         return cls(
@@ -118,10 +138,14 @@ class PFSInfo:
             mft_organisation_name=data["mft_organisation_name"],
             trading_name=data["trading_name"],
             public_phone_number=data.get("public_phone_number"),
-            address=address,
+            is_same_trading_and_brand_name=data.get("is_same_trading_and_brand_name"),
+            brand_name=data.get("brand_name"),
+            temporary_closure=data.get("temporary_closure"),
+            permanent_closure=data.get("permanent_closure"),
+            permanent_closure_date=data.get("permanent_closure_date"),
+            is_motorway_service_station=data.get("is_motorway_service_station"),
+            is_supermarket_service_station=data.get("is_supermarket_service_station"),
             location=location,
-            brand=data.get("brand"),
-            operator=data.get("operator"),
             amenities=data.get("amenities"),
-            opening_hours=data.get("opening_hours"),
+            opening_times=data.get("opening_times"),
         )

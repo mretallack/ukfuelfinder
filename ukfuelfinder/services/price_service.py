@@ -17,7 +17,6 @@ class PriceService:
 
     def get_all_pfs_prices(
         self,
-        date_time: Optional[str] = None,
         batch_number: Optional[int] = None,
         effective_start_timestamp: Optional[str] = None,
         use_cache: bool = True,
@@ -26,17 +25,14 @@ class PriceService:
         Get all PFS fuel prices.
 
         Args:
-            date_time: Start date in YYYY-MM-DD format for incremental updates
             batch_number: Batch number for pagination
-            effective_start_timestamp: Timestamp in YYYY-MM-DD HH:MM:SS format
+            effective_start_timestamp: Timestamp in YYYY-MM-DD HH:MM:SS format for incremental updates
             use_cache: Whether to use cached response
 
         Returns:
             List of PFS with fuel prices
         """
         params: Dict[str, Any] = {}
-        if date_time:
-            params["date_time"] = date_time
         if batch_number:
             params["batch-number"] = batch_number
         if effective_start_timestamp:
@@ -70,6 +66,6 @@ class PriceService:
                     prices.append(price)
         return prices
 
-    def get_incremental_updates(self, since_date: str, **kwargs: Any) -> List[PFS]:
-        """Get incremental price updates since a specific date."""
-        return self.get_all_pfs_prices(date_time=since_date, **kwargs)
+    def get_incremental_updates(self, since_timestamp: str, **kwargs: Any) -> List[PFS]:
+        """Get incremental price updates since a specific timestamp."""
+        return self.get_all_pfs_prices(effective_start_timestamp=since_timestamp, **kwargs)

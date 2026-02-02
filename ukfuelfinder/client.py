@@ -81,21 +81,21 @@ class FuelFinderClient:
 
     # Price methods
     def get_all_pfs_prices(
-        self, date_time: Optional[str] = None, batch_number: Optional[int] = None, **kwargs: Any
+        self, batch_number: Optional[int] = None, effective_start_timestamp: Optional[str] = None, **kwargs: Any
     ) -> List[PFS]:
         """
         Get all PFS fuel prices.
 
         Args:
-            date_time: Start date in YYYY-MM-DD format for incremental updates
             batch_number: Batch number for pagination
+            effective_start_timestamp: Timestamp in YYYY-MM-DD HH:MM:SS for incremental updates
             **kwargs: Additional parameters
 
         Returns:
             List of PFS with fuel prices
         """
         return self.price_service.get_all_pfs_prices(
-            date_time=date_time, batch_number=batch_number, **kwargs
+            batch_number=batch_number, effective_start_timestamp=effective_start_timestamp, **kwargs
         )
 
     def get_pfs(self, node_id: str) -> Optional[PFS]:
@@ -124,18 +124,18 @@ class FuelFinderClient:
         all_pfs = self.get_all_pfs_prices()
         return self.price_service.get_prices_by_fuel_type(fuel_type, all_pfs)
 
-    def get_incremental_price_updates(self, since_date: str, **kwargs: Any) -> List[PFS]:
+    def get_incremental_price_updates(self, since_timestamp: str, **kwargs: Any) -> List[PFS]:
         """
-        Get incremental price updates since a specific date.
+        Get incremental price updates since a specific timestamp.
 
         Args:
-            since_date: Date in YYYY-MM-DD format
+            since_timestamp: Timestamp in YYYY-MM-DD HH:MM:SS format
             **kwargs: Additional parameters
 
         Returns:
             List of PFS with updated prices
         """
-        return self.price_service.get_incremental_updates(since_date, **kwargs)
+        return self.price_service.get_incremental_updates(since_timestamp, **kwargs)
 
     # Forecourt methods
     def get_all_pfs_info(
@@ -153,18 +153,18 @@ class FuelFinderClient:
         """
         return self.forecourt_service.get_all_pfs(batch_number=batch_number, **kwargs)
 
-    def get_incremental_pfs_info(self, since_date: str, **kwargs: Any) -> List[PFSInfo]:
+    def get_incremental_pfs_info(self, since_timestamp: str, **kwargs: Any) -> List[PFSInfo]:
         """
         Get incremental PFS information updates.
 
         Args:
-            since_date: Date in YYYY-MM-DD format
+            since_timestamp: Timestamp in YYYY-MM-DD HH:MM:SS format
             **kwargs: Additional parameters
 
         Returns:
             List of updated PFS information
         """
-        return self.forecourt_service.get_incremental_pfs(date_time=since_date, **kwargs)
+        return self.forecourt_service.get_incremental_pfs(effective_start_timestamp=since_timestamp, **kwargs)
 
     def get_pfs_info(self, node_id: str) -> Optional[PFSInfo]:
         """
