@@ -4,7 +4,7 @@ OAuth 2.0 authentication for UK Fuel Finder API.
 
 import time
 import threading
-from typing import Optional, Dict, Any
+from typing import Optional
 import requests
 from .exceptions import AuthenticationError, InvalidCredentialsError
 
