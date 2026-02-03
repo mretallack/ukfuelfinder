@@ -5,18 +5,6 @@
 
 Python library for accessing the UK Government Fuel Finder API.
 
-## ⚠️ API Status Notice
-
-**As of February 2, 2026** - The UK Fuel Finder API is experiencing significant performance issues on launch day:
-
-- ✅ **Authentication endpoint** - Working
-- ✅ **Fuel prices endpoint** (`/pfs/fuel-prices`) - Working (may be slow)
-- ❌ **Forecourt info endpoint** (`/pfs`) - Returning 504 Gateway Timeout errors
-
-The API infrastructure is struggling under load. This library is fully functional and tested - the issues are with the government API servers. See [this article](https://forecourttrader.co.uk/news/fuel-finder-25-of-forecourts-in-breach-of-law-as-system-goes-live/714726.article) for more details on the API problems.
-
-**Recommendation**: Use `get_all_pfs_prices()` which works reliably. Avoid `get_all_pfs_info()` until the API stabilizes.
-
 ## Features
 
 - **OAuth 2.0 Authentication** - Automatic token management with refresh support
@@ -48,6 +36,11 @@ client = FuelFinderClient(
 
 # Get all fuel prices
 prices = client.get_all_pfs_prices()
+
+# Search for stations near a location (returns list of (distance, PFSInfo) tuples)
+nearby = client.search_by_location(latitude=51.5074, longitude=-0.1278, radius_km=5.0)
+for distance, station in nearby:
+    print(f"{distance:.2f}km - {station.trading_name}")
 
 # Get prices for specific fuel type
 unleaded_prices = client.get_prices_by_fuel_type("unleaded")
@@ -111,9 +104,10 @@ This library provides access to all Information Recipient API endpoints:
 See the [examples/](examples/) directory for complete working examples:
 
 - `basic_usage.py` - Simple getting started example
-- `advanced_filtering.py` - Filtering and sorting prices
-- `caching_example.py` - Cache configuration and usage
 - `error_handling.py` - Comprehensive error handling
+- `fetch_fuel_prices.py` - Fetch all fuel prices and save to JSON
+- `fetch_all_sites.py` - Fetch all forecourt sites and save to JSON
+- `location_search.py` - Search for stations near a location
 
 ## Development
 

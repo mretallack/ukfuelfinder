@@ -1,7 +1,8 @@
 """
 Main client for UK Fuel Finder API.
 """
-from typing import List, Optional, Iterator, Any
+from typing import List, Optional, Iterator, Any, Tuple
+from math import radians, cos, sin, asin, sqrt
 from .config import Config
 from .auth import OAuth2Authenticator
 from .http_client import HTTPClient
@@ -212,3 +213,41 @@ class FuelFinderClient:
         if self.cache:
             return self.cache.get_stats()
         return {}
+
+    def search_by_location(
+        self, latitude: float, longitude: float, radius_km: float = 5.0
+    ) -> List[Tuple[float, PFSInfo]]:
+        """
+        Search for fuel stations near a location.
+
+        Args:
+            latitude: Search center latitude
+            longitude: Search center longitude
+            radius_km: Search radius in kilometers (default: 5.0)
+
+        Returns:
+            List of tuples (distance_km, PFSInfo) sorted by distance
+        """
+        sites = self.get_all_pfs_info()
+        nearby = []
+
+        for site in sites:
+            if site.location and site.location.latitude and site.location.longitude:
+                distance = self._haversine(
+                    longitude, latitude, site.location.longitude, site.location.latitude
+                )
+                if distance <= radius_km:
+                    nearby.append((distance, site))
+
+        nearby.sort(key=lambda x: x[0])
+        return nearby
+
+    @staticmethod
+    def _haversine(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
+        """Calculate distance between two points in kilometers using Haversine formula."""
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+        c = 2 * asin(sqrt(a))
+        return 6371 * c
