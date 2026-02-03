@@ -10,8 +10,8 @@
 - **Git tracked**: ❌ NO (correct)
 
 ### Secrets Checked
-- Client ID: `00GGOh5SwvWPjiHM27EJPn37Sk80J4D8`
-- Client Secret: `M5T0qvIMs3MZHBVFH82RITJHKrP8V7OTdaggaXSmYErNs2cyp1Lq51bxGew8fOvM`
+- Client ID: `[REDACTED]`
+- Client Secret: `[REDACTED]`
 
 ### Files Scanned
 - All Python files (*.py)
