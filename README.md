@@ -133,6 +133,42 @@ mypy ukfuelfinder
 flake8 ukfuelfinder
 ```
 
+## Future Enhancements
+
+Potential features for future development:
+
+### Smart Fuel Recommendations
+- **Cost-optimized routing** - Calculate total fuel cost including detour distance based on vehicle consumption
+- **Cheapest fuel finder** - Find the most economical option considering current location, fuel prices, and distance
+- **Route integration** - Suggest fuel stops along planned routes with minimal detour
+
+### Price Intelligence
+- **Price alerts** - Notify users when prices drop below a threshold in their area
+- **Price forecasting** - Predict price trends based on historical data
+- **Price comparison** - Compare prices across brands, regions, and fuel types
+
+### Advanced Filtering
+- **Multi-criteria search** - Filter by amenities (car wash, shop, 24-hour, EV charging)
+- **Brand preferences** - Filter by preferred fuel brands or loyalty programs
+- **Fuel type availability** - Find stations with specific fuel types (HVO, E10, premium diesel)
+
+### Journey Planning
+- **Fuel range calculator** - Estimate remaining range and suggest refuel points
+- **Multi-stop optimization** - Plan optimal fuel stops for long journeys
+- **Emergency fuel finder** - Quick search for nearest station when running low
+
+### Data Analytics
+- **Spending tracking** - Monitor fuel expenses over time
+- **Savings calculator** - Calculate savings from using cheapest stations
+- **Regional price analysis** - Compare average prices across different areas
+
+### Integration Features
+- **Navigation app integration** - Direct routing to selected stations
+- **Calendar integration** - Schedule reminders for regular refueling
+- **Vehicle integration** - Sync with vehicle telematics for automatic consumption data
+
+Contributions implementing these features are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
