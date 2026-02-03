@@ -1,6 +1,7 @@
 """
 Main client for UK Fuel Finder API.
 """
+
 from typing import List, Optional, Iterator, Any, Tuple
 from math import radians, cos, sin, asin, sqrt
 from .config import Config
@@ -82,7 +83,10 @@ class FuelFinderClient:
 
     # Price methods
     def get_all_pfs_prices(
-        self, batch_number: Optional[int] = None, effective_start_timestamp: Optional[str] = None, **kwargs: Any
+        self,
+        batch_number: Optional[int] = None,
+        effective_start_timestamp: Optional[str] = None,
+        **kwargs: Any,
     ) -> List[PFS]:
         """
         Get all PFS fuel prices.
@@ -139,9 +143,7 @@ class FuelFinderClient:
         return self.price_service.get_incremental_updates(since_timestamp, **kwargs)
 
     # Forecourt methods
-    def get_all_pfs_info(
-        self, batch_number: Optional[int] = None, **kwargs: Any
-    ) -> List[PFSInfo]:
+    def get_all_pfs_info(self, batch_number: Optional[int] = None, **kwargs: Any) -> List[PFSInfo]:
         """
         Get all PFS information.
 
@@ -165,7 +167,9 @@ class FuelFinderClient:
         Returns:
             List of updated PFS information
         """
-        return self.forecourt_service.get_incremental_pfs(effective_start_timestamp=since_timestamp, **kwargs)
+        return self.forecourt_service.get_incremental_pfs(
+            effective_start_timestamp=since_timestamp, **kwargs
+        )
 
     def get_pfs_info(self, node_id: str) -> Optional[PFSInfo]:
         """

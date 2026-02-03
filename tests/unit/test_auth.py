@@ -1,4 +1,5 @@
 """Unit tests for authentication module."""
+
 import pytest
 import responses
 from ukfuelfinder.auth import OAuth2Authenticator

@@ -1,4 +1,5 @@
 """Unit tests for location search."""
+
 import pytest
 from ukfuelfinder.client import FuelFinderClient
 from ukfuelfinder.models import PFSInfo, Location
@@ -13,9 +14,9 @@ class TestLocationSearch:
         # London to Paris (approx 344 km)
         london_lat, london_lon = 51.5074, -0.1278
         paris_lat, paris_lon = 48.8566, 2.3522
-        
+
         distance = FuelFinderClient._haversine(london_lon, london_lat, paris_lon, paris_lat)
-        
+
         assert 340 < distance < 350  # Approximate distance
 
     def test_search_by_location(self, monkeypatch):
@@ -59,18 +60,18 @@ class TestLocationSearch:
                 ),
             ),
         ]
-        
+
         client = FuelFinderClient(client_id="test", client_secret="test")
         monkeypatch.setattr(client, "get_all_pfs_info", lambda: mock_sites)
-        
+
         # Search near London
         results = client.search_by_location(51.5074, -0.1278, radius_km=5.0)
-        
+
         # Should find first two stations (within 5km), not the third
         assert len(results) == 2
         assert results[0][1].node_id == "site1"  # Closest
         assert results[1][1].node_id == "site2"
-        
+
         # Results should be sorted by distance
         assert results[0][0] < results[1][0]
 
@@ -90,13 +91,13 @@ class TestLocationSearch:
                 ),
             ),
         ]
-        
+
         client = FuelFinderClient(client_id="test", client_secret="test")
         monkeypatch.setattr(client, "get_all_pfs_info", lambda: mock_sites)
-        
+
         # Search far from the station
         results = client.search_by_location(51.5074, -0.1278, radius_km=1.0)
-        
+
         assert len(results) == 0
 
     def test_search_by_location_missing_coordinates(self, monkeypatch):
@@ -122,11 +123,11 @@ class TestLocationSearch:
                 ),
             ),
         ]
-        
+
         client = FuelFinderClient(client_id="test", client_secret="test")
         monkeypatch.setattr(client, "get_all_pfs_info", lambda: mock_sites)
-        
+
         # Should not crash, just return empty results
         results = client.search_by_location(51.5074, -0.1278, radius_km=5.0)
-        
+
         assert len(results) == 0

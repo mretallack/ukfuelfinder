@@ -1,4 +1,5 @@
 """Integration tests with real API."""
+
 import pytest
 from datetime import datetime, timedelta
 

@@ -1,6 +1,7 @@
 """
 Configuration management for UK Fuel Finder API client.
 """
+
 import os
 from dataclasses import dataclass
 from typing import Optional

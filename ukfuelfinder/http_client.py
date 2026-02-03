@@ -1,6 +1,7 @@
 """
 HTTP client for UK Fuel Finder API.
 """
+
 import logging
 from typing import Dict, Any, Optional
 import requests

@@ -1,4 +1,5 @@
 """Unit tests for models module."""
+
 import pytest
 from datetime import datetime
 from ukfuelfinder.models import PFS, PFSInfo, FuelPrice, Address, Location
@@ -40,7 +41,7 @@ class TestModels:
             "address_line_1": "123 High Street",
             "city": "London",
             "postcode": "SW1A 1AA",
-            "country": "England"
+            "country": "England",
         }
 
         location = Location.from_dict(data)
@@ -64,10 +65,10 @@ class TestModels:
                 "address_line_1": "123 Street",
                 "city": "London",
                 "postcode": "SW1A 1AA",
-                "country": "England"
+                "country": "England",
             },
             "amenities": ["shop", "atm"],
-            "fuel_types": ["E10", "B7_STANDARD"]
+            "fuel_types": ["E10", "B7_STANDARD"],
         }
 
         pfs_info = PFSInfo.from_dict(data)

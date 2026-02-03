@@ -1,6 +1,7 @@
 """
 Forecourt service for UK Fuel Finder API.
 """
+
 from typing import List, Optional, Dict, Any, Iterator
 from ..http_client import HTTPClient
 from ..cache import ResponseCache

@@ -1,6 +1,7 @@
 """
 Rate limiting for UK Fuel Finder API client.
 """
+
 import time
 import threading
 from collections import deque

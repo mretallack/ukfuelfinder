@@ -1,4 +1,5 @@
 """Unit tests for rate limiter module."""
+
 import pytest
 import time
 from ukfuelfinder.rate_limiter import RateLimiter

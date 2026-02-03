@@ -1,6 +1,7 @@
 """
 Price service for UK Fuel Finder API.
 """
+
 from typing import List, Optional, Dict, Any
 from ..http_client import HTTPClient
 from ..cache import ResponseCache

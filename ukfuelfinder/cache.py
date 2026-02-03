@@ -1,6 +1,7 @@
 """
 Response caching for UK Fuel Finder API client.
 """
+
 import time
 import threading
 import hashlib

@@ -1,6 +1,7 @@
 """
 Data models for UK Fuel Finder API responses.
 """
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Dict, Any
@@ -22,11 +23,11 @@ class FuelPrice:
         if data.get("price"):
             # Price comes as string like "0120.0000"
             price = float(data["price"])
-        
+
         price_last_updated = None
         if data.get("price_last_updated"):
             price_last_updated = parser.parse(data["price_last_updated"])
-        
+
         return cls(
             fuel_type=data["fuel_type"],
             price=price,
