@@ -5,6 +5,20 @@
 
 Python library for accessing the UK Government Fuel Finder API.
 
+## ⚠️ API Status Warning
+
+**As of February 4, 2026** - The UK Government Fuel Finder API is currently experiencing severe performance issues:
+
+- ❌ **Data endpoints not responding** - `/pfs/fuel-prices` and `/pfs` endpoints timing out
+- ✅ **Authentication works** - OAuth token generation functional
+- ⏱️ **Requests timing out** - No response after 30+ seconds
+
+**This library is fully functional and tested.** The issues are with the UK Government's API infrastructure, not this library. The API has been unreliable since its launch on February 2, 2026.
+
+**Status**: Waiting for UK Government to fix their API servers.
+
+For updates on API status, check: https://www.gov.uk/guidance/access-the-latest-fuel-prices-and-forecourt-data-via-api-or-email
+
 ## Features
 
 - **OAuth 2.0 Authentication** - Automatic token management with refresh support
