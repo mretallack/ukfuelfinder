@@ -1,4 +1,5 @@
 """Test for pagination bug - should fetch all stations, not just first batch."""
+
 import pytest
 from ukfuelfinder import FuelFinderClient
 import os

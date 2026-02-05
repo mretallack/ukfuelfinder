@@ -103,9 +103,11 @@ class FuelFinderClient:
         if batch_number is not None:
             # Fetch specific batch
             return self.price_service.get_all_pfs_prices(
-                batch_number=batch_number, effective_start_timestamp=effective_start_timestamp, **kwargs
+                batch_number=batch_number,
+                effective_start_timestamp=effective_start_timestamp,
+                **kwargs,
             )
-        
+
         # Fetch all batches automatically
         return self.price_service.get_all_pfs_prices_paginated(
             effective_start_timestamp=effective_start_timestamp, **kwargs
@@ -156,7 +158,7 @@ class FuelFinderClient:
         Get all PFS information.
 
         Args:
-            batch_number: Batch number for pagination (500 per batch). 
+            batch_number: Batch number for pagination (500 per batch).
                          If None, automatically fetches all batches.
             **kwargs: Additional parameters
 
@@ -166,7 +168,7 @@ class FuelFinderClient:
         if batch_number is not None:
             # Fetch specific batch
             return self.forecourt_service.get_all_pfs(batch_number=batch_number, **kwargs)
-        
+
         # Fetch all batches automatically
         all_pfs = []
         for batch in self.forecourt_service.get_all_pfs_paginated(**kwargs):

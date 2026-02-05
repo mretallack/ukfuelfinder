@@ -3,7 +3,7 @@
 import pytest
 import responses
 from ukfuelfinder.auth import OAuth2Authenticator
-from ukfuelfinder.exceptions import AuthenticationError, InvalidCredentialsError
+from ukfuelfinder.exceptions import InvalidCredentialsError
 
 
 @pytest.mark.unit
