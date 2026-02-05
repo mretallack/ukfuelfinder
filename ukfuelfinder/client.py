@@ -92,15 +92,25 @@ class FuelFinderClient:
         Get all PFS fuel prices.
 
         Args:
-            batch_number: Batch number for pagination
+            batch_number: Batch number for pagination (500 per batch).
+                         If None, automatically fetches all batches.
             effective_start_timestamp: Timestamp in YYYY-MM-DD HH:MM:SS for incremental updates
             **kwargs: Additional parameters
 
         Returns:
             List of PFS with fuel prices
         """
-        return self.price_service.get_all_pfs_prices(
-            batch_number=batch_number, effective_start_timestamp=effective_start_timestamp, **kwargs
+        if batch_number is not None:
+            # Fetch specific batch
+            return self.price_service.get_all_pfs_prices(
+                batch_number=batch_number,
+                effective_start_timestamp=effective_start_timestamp,
+                **kwargs,
+            )
+
+        # Fetch all batches automatically
+        return self.price_service.get_all_pfs_prices_paginated(
+            effective_start_timestamp=effective_start_timestamp, **kwargs
         )
 
     def get_pfs(self, node_id: str) -> Optional[PFS]:
@@ -148,13 +158,22 @@ class FuelFinderClient:
         Get all PFS information.
 
         Args:
-            batch_number: Batch number for pagination (500 per batch)
+            batch_number: Batch number for pagination (500 per batch).
+                         If None, automatically fetches all batches.
             **kwargs: Additional parameters
 
         Returns:
             List of PFS information
         """
-        return self.forecourt_service.get_all_pfs(batch_number=batch_number, **kwargs)
+        if batch_number is not None:
+            # Fetch specific batch
+            return self.forecourt_service.get_all_pfs(batch_number=batch_number, **kwargs)
+
+        # Fetch all batches automatically
+        all_pfs = []
+        for batch in self.forecourt_service.get_all_pfs_paginated(**kwargs):
+            all_pfs.extend(batch)
+        return all_pfs
 
     def get_incremental_pfs_info(self, since_timestamp: str, **kwargs: Any) -> List[PFSInfo]:
         """
