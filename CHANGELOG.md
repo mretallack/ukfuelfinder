@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-02-17
+
+### Fixed
+- Handle null latitude/longitude coordinates gracefully in Location model
+- Fixed black formatting issues in price_service.py and models.py
+- Added default batch_number=1 for incremental updates
+
+### Added
+- OpenAPI specification documentation in docs/openapi.json
+- Release procedure documentation in README.md
+
+### Changed
+- Location.latitude and Location.longitude now Optional[float] to handle null values
+- Improved error handling for API responses with missing coordinate data
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

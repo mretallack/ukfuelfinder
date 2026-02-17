@@ -205,3 +205,31 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
+## Release Procedure
+
+To create a new release:
+
+1. **Update version** in all files:
+   - `pyproject.toml`
+   - `setup.py` 
+   - `ukfuelfinder/__init__.py`
+
+2. **Update CHANGELOG.md** with new version entry
+
+3. **Commit and push** version updates:
+   ```bash
+   git add pyproject.toml setup.py ukfuelfinder/__init__.py CHANGELOG.md
+   git commit -m "Release: vX.Y.Z"
+   git push origin main
+   ```
+
+4. **Create GitHub release**:
+   - Go to GitHub repository → Releases → Create new release
+   - Tag: `vX.Y.Z` (must match version in files)
+   - Title: `vX.Y.Z`
+   - Description: Copy from CHANGELOG.md for the version
+   - Publish release
+
+5. **Automated publishing**:
+   - GitHub Actions will automatically build and publish to PyPI
+   - Check `.github/workflows/publish.yml` for details
