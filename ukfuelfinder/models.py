@@ -86,8 +86,8 @@ class Address:
 class Location:
     """Geographic coordinates."""
 
-    latitude: float
-    longitude: float
+    latitude: Optional[float]
+    longitude: Optional[float]
     address_line_1: Optional[str] = None
     address_line_2: Optional[str] = None
     city: Optional[str] = None
@@ -98,9 +98,12 @@ class Location:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Location":
         """Create Location from API response dictionary."""
+        latitude = float(data["latitude"]) if data.get("latitude") is not None else None
+        longitude = float(data["longitude"]) if data.get("longitude") is not None else None
+        
         return cls(
-            latitude=float(data["latitude"]),
-            longitude=float(data["longitude"]),
+            latitude=latitude,
+            longitude=longitude,
             address_line_1=data.get("address_line_1"),
             address_line_2=data.get("address_line_2"),
             city=data.get("city"),
