@@ -100,7 +100,7 @@ class Location:
         """Create Location from API response dictionary."""
         latitude = float(data["latitude"]) if data.get("latitude") is not None else None
         longitude = float(data["longitude"]) if data.get("longitude") is not None else None
-        
+
         return cls(
             latitude=latitude,
             longitude=longitude,

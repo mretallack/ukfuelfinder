@@ -69,7 +69,7 @@ class PriceService:
 
     def get_incremental_updates(self, since_timestamp: str, **kwargs: Any) -> List[PFS]:
         """Get incremental price updates since a specific timestamp."""
-        kwargs.setdefault('batch_number', 1)
+        kwargs.setdefault("batch_number", 1)
         return self.get_all_pfs_prices(effective_start_timestamp=since_timestamp, **kwargs)
 
     def get_all_pfs_prices_paginated(
