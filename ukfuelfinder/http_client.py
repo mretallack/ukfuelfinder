@@ -3,21 +3,18 @@ HTTP client for UK Fuel Finder API.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 import requests
+
 from .auth import OAuth2Authenticator
+from .exceptions import BatchNotFoundError
+from .exceptions import ConnectionError as FuelFinderConnectionError
+from .exceptions import (NotFoundError, RateLimitError, ResponseParseError,
+                         ServerError)
+from .exceptions import TimeoutError as FuelFinderTimeoutError
+from .exceptions import ValidationError
 from .rate_limiter import RateLimiter
-from .exceptions import (
-    NotFoundError,
-    BatchNotFoundError,
-    InvalidBatchNumberError,
-    RateLimitError,
-    ServerError,
-    ValidationError,
-    TimeoutError as FuelFinderTimeoutError,
-    ConnectionError as FuelFinderConnectionError,
-    ResponseParseError,
-)
 
 logger = logging.getLogger(__name__)
 

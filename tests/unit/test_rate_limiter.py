@@ -1,9 +1,11 @@
 """Unit tests for rate limiter module."""
 
-import pytest
 import time
-from ukfuelfinder.rate_limiter import RateLimiter
+
+import pytest
+
 from ukfuelfinder.exceptions import RateLimitError
+from ukfuelfinder.rate_limiter import RateLimiter
 
 
 @pytest.mark.unit

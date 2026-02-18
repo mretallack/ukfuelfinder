@@ -1,7 +1,8 @@
 """Integration tests with real API."""
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 
 @pytest.mark.integration
@@ -52,11 +53,11 @@ class TestRealAPI:
 
     def test_cache_functionality(self, real_client):
         """Test that caching works."""
-        # First request
-        prices1 = real_client.get_all_pfs_prices()
+        # First request with specific batch to avoid rate limits
+        prices1 = real_client.get_all_pfs_prices(batch_number=1)
 
         # Second request (should be cached)
-        prices2 = real_client.get_all_pfs_prices()
+        prices2 = real_client.get_all_pfs_prices(batch_number=1)
 
         # Should return same data
         assert len(prices1) == len(prices2)

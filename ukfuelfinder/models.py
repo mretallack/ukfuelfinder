@@ -4,7 +4,8 @@ Data models for UK Fuel Finder API responses.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
 from dateutil import parser
 
 
@@ -31,7 +32,9 @@ class FuelPrice:
 
         price_change_effective_timestamp = None
         if data.get("price_change_effective_timestamp"):
-            price_change_effective_timestamp = parser.parse(data["price_change_effective_timestamp"])
+            price_change_effective_timestamp = parser.parse(
+                data["price_change_effective_timestamp"]
+            )
 
         return cls(
             fuel_type=data["fuel_type"],

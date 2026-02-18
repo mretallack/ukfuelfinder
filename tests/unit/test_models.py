@@ -1,8 +1,10 @@
 """Unit tests for models module."""
 
-import pytest
 from datetime import datetime
-from ukfuelfinder.models import PFS, PFSInfo, FuelPrice, Location
+
+import pytest
+
+from ukfuelfinder.models import PFS, FuelPrice, Location, PFSInfo
 
 
 @pytest.mark.unit

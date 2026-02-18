@@ -2,9 +2,10 @@
 Price service for UK Fuel Finder API.
 """
 
-from typing import List, Optional, Dict, Any
-from ..http_client import HTTPClient
+from typing import Any, Dict, List, Optional
+
 from ..cache import ResponseCache
+from ..http_client import HTTPClient
 from ..models import PFS, FuelPrice
 
 
