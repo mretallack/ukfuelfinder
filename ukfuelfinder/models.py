@@ -15,6 +15,7 @@ class FuelPrice:
     fuel_type: str
     price: Optional[float]  # Can be null
     price_last_updated: Optional[datetime] = None
+    price_change_effective_timestamp: Optional[datetime] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "FuelPrice":
@@ -28,10 +29,15 @@ class FuelPrice:
         if data.get("price_last_updated"):
             price_last_updated = parser.parse(data["price_last_updated"])
 
+        price_change_effective_timestamp = None
+        if data.get("price_change_effective_timestamp"):
+            price_change_effective_timestamp = parser.parse(data["price_change_effective_timestamp"])
+
         return cls(
             fuel_type=data["fuel_type"],
             price=price,
             price_last_updated=price_last_updated,
+            price_change_effective_timestamp=price_change_effective_timestamp,
         )
 
 

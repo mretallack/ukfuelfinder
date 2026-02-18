@@ -19,6 +19,46 @@ Python library for accessing the UK Government Fuel Finder API.
 
 For updates on API status, check: https://www.gov.uk/guidance/access-the-latest-fuel-prices-and-forecourt-data-via-api-or-email
 
+## ⚠️ API Changes (February 17, 2025)
+
+The UK Fuel Finder API has been updated with breaking changes:
+
+### Breaking Changes
+1. **Removed Fields**: `success` and `message` fields removed from API responses
+2. **New Field**: `price_change_effective_timestamp` added to fuel price responses
+3. **Error Codes**: Invalid batch numbers now return HTTP 404 (Not Found) instead of previous error codes
+4. **Data Types**: Latitude and longitude values now use double precision
+
+### Backward Compatibility
+This library includes backward compatibility mode (enabled by default):
+
+```python
+# With backward compatibility (default)
+client = FuelFinderClient(backward_compatible=True)
+prices = client.get_all_pfs_prices()
+print(prices[0].success)  # Returns True (for backward compatibility)
+print(prices[0].message)  # Returns empty string (for backward compatibility)
+
+# Without backward compatibility
+client = FuelFinderClient(backward_compatible=False)
+prices = client.get_all_pfs_prices()
+# prices[0].success and prices[0].message not available
+```
+
+### Environment Variable
+Control backward compatibility via environment variable:
+```bash
+export UKFUELFINDER_BACKWARD_COMPATIBLE=0  # Disable backward compatibility
+```
+
+### Migration Guide
+1. Update to the latest version of this library
+2. Test with `backward_compatible=True` (default)
+3. Update your code to remove usage of `success` and `message` fields
+4. Handle 404 errors for invalid batch numbers
+5. Switch to `backward_compatible=False` when ready
+6. Update to use the new `price_change_effective_timestamp` field
+
 ## Features
 
 - **OAuth 2.0 Authentication** - Automatic token management with refresh support

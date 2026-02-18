@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2025-02-17
+
+### Added
+- **Backward Compatibility Mode**: Added backward compatibility for API changes
+- **New Exception Types**: Added `BatchNotFoundError` and `InvalidBatchNumberError` for better error handling
+- **BackwardCompatibleResponse**: Wrapper class for backward compatibility with deprecated fields
+- **Environment Variable Support**: `UKFUELFINDER_BACKWARD_COMPATIBLE` environment variable
+- **New Configuration**: `backward_compatible` parameter in `FuelFinderClient` constructor
+
+### Changed
+- **API Changes Support**: Updated to handle February 17, 2025 API changes
+- **Error Handling**: Updated to handle new 404 responses for invalid batch numbers
+- **Response Models**: Added `price_change_effective_timestamp` field to FuelPrice model
+- **HTTP Client**: Updated to handle new API response formats
+
+### Fixed
+- **Error Handling**: Proper handling of 404 errors for invalid batch numbers
+- **Response Parsing**: Fixed handling of API responses without `success` and `message` fields
+- **Backward Compatibility**: Old code using `success` and `message` fields continues to work
+
+### Breaking Changes
+- **API Changes**: The UK Fuel Finder API has been updated with breaking changes:
+  - Removed `success` and `message` fields from all responses
+  - Added `price_change_effective_timestamp` field to fuel price responses
+  - Invalid batch numbers now return HTTP 404 (was 400)
+  - Latitude/longitude coordinates now use double precision
+
+### Migration
+- Set `backward_compatible=True` (default) to maintain compatibility
+- Update code to not rely on `success` and `message` fields
+- Handle new `price_change_effective_timestamp` field in fuel price data
+- Update error handling for 404 responses on invalid batch numbers
+
 ## [1.2.0] - 2026-02-17
 
 ### Fixed

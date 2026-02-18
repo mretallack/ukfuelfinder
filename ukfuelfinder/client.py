@@ -2,7 +2,8 @@
 Main client for UK Fuel Finder API.
 """
 
-from typing import List, Optional, Iterator, Any, Tuple
+import os
+from typing import List, Optional, Iterator, Any, Tuple, Union
 from math import radians, cos, sin, asin, sqrt
 from .config import Config
 from .auth import OAuth2Authenticator
@@ -12,6 +13,8 @@ from .rate_limiter import RateLimiter
 from .services.price_service import PriceService
 from .services.forecourt_service import ForecourtService
 from .models import PFS, PFSInfo, FuelPrice
+from .compatibility import BackwardCompatibleResponse
+from .exceptions import BatchNotFoundError, InvalidBatchNumberError
 
 
 class FuelFinderClient:
@@ -24,6 +27,18 @@ class FuelFinderClient:
         ...     client_secret="your_client_secret"
         ... )
         >>> prices = client.get_all_pfs_prices()
+        
+    Backward Compatibility:
+        >>> # With backward compatibility (default)
+        >>> client = FuelFinderClient(backward_compatible=True)
+        >>> prices = client.get_all_pfs_prices()
+        >>> print(prices[0].success)  # Returns True
+        >>> print(prices[0].message)  # Returns empty string
+        
+        >>> # Without backward compatibility
+        >>> client = FuelFinderClient(backward_compatible=False)
+        >>> prices = client.get_all_pfs_prices()
+        >>> # prices[0].success and prices[0].message not available
     """
 
     def __init__(
@@ -33,6 +48,7 @@ class FuelFinderClient:
         environment: str = "production",
         cache_enabled: bool = True,
         timeout: int = 30,
+        backward_compatible: bool = True,
     ):
         """
         Initialize Fuel Finder client.
@@ -43,6 +59,7 @@ class FuelFinderClient:
             environment: "production" or "test"
             cache_enabled: Enable response caching
             timeout: Request timeout in seconds
+            backward_compatible: Enable backward compatibility mode for API changes
         """
         if client_id and client_secret:
             self.config = Config(
@@ -54,6 +71,13 @@ class FuelFinderClient:
             )
         else:
             self.config = Config.from_env(environment)
+        
+        # Check environment variable for backward compatibility (overrides parameter)
+        env_backward_compatible = os.getenv("UKFUELFINDER_BACKWARD_COMPATIBLE")
+        if env_backward_compatible is not None:
+            self.backward_compatible = env_backward_compatible.lower() in ("1", "true", "yes")
+        else:
+            self.backward_compatible = backward_compatible
 
         # Initialize components
         self.authenticator = OAuth2Authenticator(
@@ -87,7 +111,7 @@ class FuelFinderClient:
         batch_number: Optional[int] = None,
         effective_start_timestamp: Optional[str] = None,
         **kwargs: Any,
-    ) -> List[PFS]:
+    ) -> Union[List[PFS], List[BackwardCompatibleResponse[PFS]]]:
         """
         Get all PFS fuel prices.
 
@@ -100,20 +124,31 @@ class FuelFinderClient:
         Returns:
             List of PFS with fuel prices
         """
-        if batch_number is not None:
-            # Fetch specific batch
-            return self.price_service.get_all_pfs_prices(
-                batch_number=batch_number,
-                effective_start_timestamp=effective_start_timestamp,
-                **kwargs,
-            )
+        try:
+            if batch_number is not None:
+                # Fetch specific batch
+                pfs_list = self.price_service.get_all_pfs_prices(
+                    batch_number=batch_number,
+                    effective_start_timestamp=effective_start_timestamp,
+                    **kwargs,
+                )
+            else:
+                # Fetch all batches automatically
+                pfs_list = self.price_service.get_all_pfs_prices_paginated(
+                    effective_start_timestamp=effective_start_timestamp, **kwargs
+                )
+        except BatchNotFoundError as e:
+            # Handle backward compatibility for batch errors
+            if self.backward_compatible:
+                raise InvalidBatchNumberError(f"Invalid batch number: {batch_number}") from e
+            raise
+        
+        # Apply backward compatibility wrapper if enabled
+        if self.backward_compatible:
+            return [BackwardCompatibleResponse(pfs) for pfs in pfs_list]
+        return pfs_list
 
-        # Fetch all batches automatically
-        return self.price_service.get_all_pfs_prices_paginated(
-            effective_start_timestamp=effective_start_timestamp, **kwargs
-        )
-
-    def get_pfs(self, node_id: str) -> Optional[PFS]:
+    def get_pfs(self, node_id: str) -> Optional[Union[PFS, BackwardCompatibleResponse[PFS]]]:
         """
         Get specific PFS by node ID.
 
@@ -124,7 +159,12 @@ class FuelFinderClient:
             PFS object or None if not found
         """
         all_pfs = self.get_all_pfs_prices()
-        return self.price_service.get_pfs_by_node_id(node_id, all_pfs)
+        pfs = self.price_service.get_pfs_by_node_id(node_id, all_pfs)
+        
+        # Apply backward compatibility wrapper if enabled
+        if pfs and self.backward_compatible:
+            return BackwardCompatibleResponse(pfs)
+        return pfs
 
     def get_prices_by_fuel_type(self, fuel_type: str) -> List[FuelPrice]:
         """
@@ -139,7 +179,9 @@ class FuelFinderClient:
         all_pfs = self.get_all_pfs_prices()
         return self.price_service.get_prices_by_fuel_type(fuel_type, all_pfs)
 
-    def get_incremental_price_updates(self, since_timestamp: str, **kwargs: Any) -> List[PFS]:
+    def get_incremental_price_updates(
+        self, since_timestamp: str, **kwargs: Any
+    ) -> Union[List[PFS], List[BackwardCompatibleResponse[PFS]]]:
         """
         Get incremental price updates since a specific timestamp.
 
@@ -150,10 +192,17 @@ class FuelFinderClient:
         Returns:
             List of PFS with updated prices
         """
-        return self.price_service.get_incremental_updates(since_timestamp, **kwargs)
+        pfs_list = self.price_service.get_incremental_updates(since_timestamp, **kwargs)
+        
+        # Apply backward compatibility wrapper if enabled
+        if self.backward_compatible:
+            return [BackwardCompatibleResponse(pfs) for pfs in pfs_list]
+        return pfs_list
 
     # Forecourt methods
-    def get_all_pfs_info(self, batch_number: Optional[int] = None, **kwargs: Any) -> List[PFSInfo]:
+    def get_all_pfs_info(
+        self, batch_number: Optional[int] = None, **kwargs: Any
+    ) -> Union[List[PFSInfo], List[BackwardCompatibleResponse[PFSInfo]]]:
         """
         Get all PFS information.
 
@@ -165,17 +214,30 @@ class FuelFinderClient:
         Returns:
             List of PFS information
         """
-        if batch_number is not None:
-            # Fetch specific batch
-            return self.forecourt_service.get_all_pfs(batch_number=batch_number, **kwargs)
+        try:
+            if batch_number is not None:
+                # Fetch specific batch
+                pfs_list = self.forecourt_service.get_all_pfs(batch_number=batch_number, **kwargs)
+            else:
+                # Fetch all batches automatically
+                all_pfs = []
+                for batch in self.forecourt_service.get_all_pfs_paginated(**kwargs):
+                    all_pfs.extend(batch)
+                pfs_list = all_pfs
+        except BatchNotFoundError as e:
+            # Handle backward compatibility for batch errors
+            if self.backward_compatible:
+                raise InvalidBatchNumberError(f"Invalid batch number: {batch_number}") from e
+            raise
+        
+        # Apply backward compatibility wrapper if enabled
+        if self.backward_compatible:
+            return [BackwardCompatibleResponse(pfs) for pfs in pfs_list]
+        return pfs_list
 
-        # Fetch all batches automatically
-        all_pfs = []
-        for batch in self.forecourt_service.get_all_pfs_paginated(**kwargs):
-            all_pfs.extend(batch)
-        return all_pfs
-
-    def get_incremental_pfs_info(self, since_timestamp: str, **kwargs: Any) -> List[PFSInfo]:
+    def get_incremental_pfs_info(
+        self, since_timestamp: str, **kwargs: Any
+    ) -> Union[List[PFSInfo], List[BackwardCompatibleResponse[PFSInfo]]]:
         """
         Get incremental PFS information updates.
 
@@ -186,11 +248,16 @@ class FuelFinderClient:
         Returns:
             List of updated PFS information
         """
-        return self.forecourt_service.get_incremental_pfs(
+        pfs_list = self.forecourt_service.get_incremental_pfs(
             effective_start_timestamp=since_timestamp, **kwargs
         )
+        
+        # Apply backward compatibility wrapper if enabled
+        if self.backward_compatible:
+            return [BackwardCompatibleResponse(pfs) for pfs in pfs_list]
+        return pfs_list
 
-    def get_pfs_info(self, node_id: str) -> Optional[PFSInfo]:
+    def get_pfs_info(self, node_id: str) -> Optional[Union[PFSInfo, BackwardCompatibleResponse[PFSInfo]]]:
         """
         Get specific PFS information by node ID.
 
@@ -201,16 +268,26 @@ class FuelFinderClient:
             PFSInfo object or None if not found
         """
         all_pfs = self.get_all_pfs_info()
-        return self.forecourt_service.get_pfs_by_node_id(node_id, all_pfs)
+        pfs = self.forecourt_service.get_pfs_by_node_id(node_id, all_pfs)
+        
+        # Apply backward compatibility wrapper if enabled
+        if pfs and self.backward_compatible:
+            return BackwardCompatibleResponse(pfs)
+        return pfs
 
-    def get_all_pfs_paginated(self) -> Iterator[List[PFSInfo]]:
+    def get_all_pfs_paginated(self) -> Iterator[Union[List[PFSInfo], List[BackwardCompatibleResponse[PFSInfo]]]]:
         """
         Get all PFS information with automatic pagination.
 
         Yields:
             Lists of PFS information (up to 500 per batch)
         """
-        return self.forecourt_service.get_all_pfs_paginated()
+        for batch in self.forecourt_service.get_all_pfs_paginated():
+            # Apply backward compatibility wrapper if enabled
+            if self.backward_compatible:
+                yield [BackwardCompatibleResponse(pfs) for pfs in batch]
+            else:
+                yield batch
 
     # Utility methods
     def clear_cache(self) -> None:
@@ -239,7 +316,7 @@ class FuelFinderClient:
 
     def search_by_location(
         self, latitude: float, longitude: float, radius_km: float = 5.0
-    ) -> List[Tuple[float, PFSInfo]]:
+    ) -> List[Tuple[float, Union[PFSInfo, BackwardCompatibleResponse[PFSInfo]]]]:
         """
         Search for fuel stations near a location.
 
@@ -255,9 +332,12 @@ class FuelFinderClient:
         nearby = []
 
         for site in sites:
-            if site.location and site.location.latitude and site.location.longitude:
+            # Unwrap if it's a BackwardCompatibleResponse for distance calculation
+            actual_site = site._response if hasattr(site, '_response') else site
+            
+            if actual_site.location and actual_site.location.latitude and actual_site.location.longitude:
                 distance = self._haversine(
-                    longitude, latitude, site.location.longitude, site.location.latitude
+                    longitude, latitude, actual_site.location.longitude, actual_site.location.latitude
                 )
                 if distance <= radius_km:
                     nearby.append((distance, site))

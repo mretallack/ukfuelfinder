@@ -39,6 +39,12 @@ class NotFoundError(APIError):
     pass
 
 
+class BatchNotFoundError(NotFoundError):
+    """Raised when a batch number is not found (404)."""
+
+    pass
+
+
 class RateLimitError(APIError):
     """Raised when API rate limit is exceeded (429)."""
 
@@ -55,6 +61,12 @@ class ServerError(APIError):
 
 class ValidationError(APIError):
     """Raised when request validation fails (400)."""
+
+    pass
+
+
+class InvalidBatchNumberError(ValidationError):
+    """Raised when a batch number is invalid (backward compatibility)."""
 
     pass
 
