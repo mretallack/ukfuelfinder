@@ -111,12 +111,10 @@ def validate_response(data: dict) -> FuelPriceResponse:
 ### 1. Unit Tests
 - Test 404 responses for invalid batch numbers
 - Test response parsing without success/message fields
-- Test CSV parsing with new field name
 - Test coordinate precision handling
 
 ### 2. Integration Tests
 - Test actual API calls with valid/invalid batch numbers
-- Test CSV download and parsing
 - Test error handling scenarios
 
 ### 3. Mock Data
@@ -135,17 +133,14 @@ mock_response = {
 ### 1. Required Changes
 - Response model classes
 - Error handling logic
-- CSV parser configuration
 - Test data and mocks
 
 ### 2. External Dependencies
 - API documentation updates
-- CSV format specification
 - Error code documentation
 
 ### 3. Testing Resources
 - Test batch numbers (valid and invalid)
-- Sample CSV files with new field name
 - Mock API responses
 
 ## Backward Compatibility Strategy
@@ -304,7 +299,7 @@ The UK Fuel Finder API has been updated with breaking changes:
 1. **Removed Fields**: `success` and `message` fields removed from responses
 2. **New Field**: `price_change_effective_timestamp` added to responses
 3. **Error Codes**: Invalid batch numbers now return HTTP 404 (Not Found)
-4. **CSV Format**: `latest_update_timestamp` renamed to `forecourt_update_timestamp`
+
 
 ### Backward Compatibility
 This library includes backward compatibility mode (enabled by default):
@@ -441,7 +436,7 @@ def test_end_to_end_backward_compatibility():
 ### 1. Breaking Changes
 - Clients using `success` or `message` fields will break without compatibility mode
 - Clients expecting specific error codes for invalid batches will break
-- CSV parsers using old field name will break
+
 
 ### 2. Versioning Strategy
 - Use semantic versioning: breaking changes in major versions
