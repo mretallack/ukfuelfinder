@@ -67,8 +67,8 @@ class TestRealAPI:
 
     def test_clear_cache(self, real_client):
         """Test cache clearing."""
-        # Make a request
-        real_client.get_all_pfs_prices()
+        # Make a request with specific batch to avoid rate limits
+        real_client.get_all_pfs_prices(batch_number=1)
 
         # Clear cache
         real_client.clear_cache()
