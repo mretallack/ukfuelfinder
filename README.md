@@ -163,6 +163,24 @@ See the [examples/](examples/) directory for complete working examples:
 - `fetch_all_sites.py` - Fetch all forecourt sites and save to JSON
 - `location_search.py` - Search for stations near a location
 
+### Backward Compatibility Example
+
+```python
+# With backward compatibility (default)
+client = FuelFinderClient(backward_compatible=True)
+prices = client.get_all_pfs_prices()
+print(prices[0].success)  # Returns True (for backward compatibility)
+print(prices[0].message)  # Returns empty string (for backward compatibility)
+
+# Without backward compatibility
+client = FuelFinderClient(backward_compatible=False)
+prices = client.get_all_pfs_prices()
+# prices[0].success and prices[0].message not available
+# Use price_change_effective_timestamp instead
+if prices[0].fuel_prices:
+    print(prices[0].fuel_prices[0].price_change_effective_timestamp)
+```
+
 ## Development
 
 ### Setup
