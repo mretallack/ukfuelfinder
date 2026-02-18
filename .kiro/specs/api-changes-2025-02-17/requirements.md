@@ -18,9 +18,7 @@ API changes announced on February 17, 2025 that require updates to the UK Fuel F
 - **New Field**: `price_change_effective_timestamp` field added to provide visibility into pricing updates
 - **Note**: Future pricing information is not included in responses
 
-### 4. CSV Format Changes
-- **Change**: `latest_update_timestamp` field renamed to `forecourt_update_timestamp`
-- **Impact**: CSV parsing logic needs to be updated
+
 
 ## EARS Notation Requirements
 
@@ -40,11 +38,7 @@ API changes announced on February 17, 2025 that require updates to the UK Fuel F
 **AND SHALL** include the new `price_change_effective_timestamp` field  
 **TO ENSURE** alignment with updated API specification
 
-### 4. CSV Field Names
-**WHEN** processing CSV data  
-**THE SYSTEM SHALL** use `forecourt_update_timestamp` field name  
-**INSTEAD OF** the previous `latest_update_timestamp`  
-**TO ENSURE** compatibility with updated CSV format
+
 
 ### 5. Future Pricing
 **WHEN** retrieving pricing information  
@@ -55,12 +49,12 @@ API changes announced on February 17, 2025 that require updates to the UK Fuel F
 - **Breaking Changes**: Yes - response schema changes
 - **Data Type Changes**: Latitude/longitude precision increased
 - **Error Handling**: New 404 responses for invalid batch numbers
-- **CSV Format**: Field name changes require CSV parser updates
+
 - **Backward Compatibility**: Not backward compatible with previous API versions
 
 ## Implementation Priority
 1. Update response models to remove `success` and `message` fields
-2. Update CSV parsing to use `forecourt_update_timestamp`
+
 3. Update error handling for 404 responses
 4. Update coordinate handling to use double precision
 5. Add `price_change_effective_timestamp` field support
