@@ -17,6 +17,7 @@ class TestModels:
             "fuel_type": "E10",
             "price": "142.9000",
             "price_last_updated": "2026-02-02T18:00:00",
+            "price_change_effective_timestamp": "2025-02-17T10:30:00Z",
         }
 
         price = FuelPrice.from_dict(data)
@@ -24,6 +25,8 @@ class TestModels:
         assert price.fuel_type == "E10"
         assert price.price == 142.9
         assert isinstance(price.price_last_updated, datetime)
+        assert isinstance(price.price_change_effective_timestamp, datetime)
+        assert price.price_change_effective_timestamp.year == 2025
 
     def test_pfs_from_dict(self, mock_pfs_response):
         """Test PFS creation from dictionary."""
