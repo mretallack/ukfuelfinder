@@ -10,8 +10,7 @@ import requests
 from .auth import OAuth2Authenticator
 from .exceptions import BatchNotFoundError
 from .exceptions import ConnectionError as FuelFinderConnectionError
-from .exceptions import (NotFoundError, RateLimitError, ResponseParseError,
-                         ServerError)
+from .exceptions import NotFoundError, RateLimitError, ResponseParseError, ServerError
 from .exceptions import TimeoutError as FuelFinderTimeoutError
 from .exceptions import ValidationError
 from .rate_limiter import RateLimiter
