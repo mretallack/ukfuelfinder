@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2025-02-19
+
+### Added
+- **Global Configuration**: `set_global_backward_compatible()` function for application-wide settings
+- **HTTP Client Tests**: Comprehensive test suite for HTTP client (10 new tests)
+- **Global Config Tests**: Test suite for global configuration (6 new tests)
+- **Integration Test**: Test for invalid batch number 404 handling
+- **New Examples**: 
+  - `examples/api_migration.py` - Migration guide from old to new API
+  - `examples/global_config.py` - Global configuration usage
+- **Enhanced Documentation**: Updated all examples for new API format
+
+### Changed
+- **Version Bump**: Major version to 2.0.0 for API changes
+- **HTTP Client**: Enhanced response parsing for both old and new API formats
+- **Configuration Priority**: Global config > Environment variable > Constructor parameter > Default
+- **Test Coverage**: Increased to 74% (58 tests passing)
+- **Examples**: Updated `basic_usage.py` to demonstrate new API
+
+### Fixed
+- **HTTP Client**: Proper handling of response formats with and without data wrapper
+- **Error Handling**: Improved 404 detection for batch endpoints
+- **Mock Tests**: Fixed elapsed time mocking in HTTP client tests
+
+### Documentation
+- Updated README with comprehensive API changes section
+- Added detailed migration guide
+- Updated all code examples for new API
+- Created release notes (RELEASE_NOTES_2.0.0.md)
+
+### Technical Details
+- All 58 unit tests passing
+- 74% code coverage
+- HTTP client now at 96% coverage
+- Backward compatibility fully tested
+
 ## [1.3.0] - 2025-02-17
 
 ### Added

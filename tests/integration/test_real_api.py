@@ -77,3 +77,11 @@ class TestRealAPI:
         # Check cache is empty
         stats = real_client.get_cache_stats()
         assert stats["size"] == 0
+
+    def test_invalid_batch_number_404(self, real_client):
+        """Test that invalid batch number raises BatchNotFoundError."""
+        from ukfuelfinder.exceptions import BatchNotFoundError
+        
+        # Use a very high batch number that doesn't exist
+        with pytest.raises(BatchNotFoundError):
+            real_client.get_all_pfs_prices(batch_number=99999)

@@ -8,8 +8,8 @@ Implementation tasks for the February 17, 2025 API changes to the UK Fuel Finder
 ### 1. Update Response Models
 - [x] Remove `success` and `message` fields from all response model classes
 - [x] Add `price_change_effective_timestamp` field to appropriate response models
-- [ ] Update model validation to exclude deprecated fields
-- [ ] Update model tests to reflect new field structure
+- [x] Update model validation to exclude deprecated fields
+- [x] Update model tests to reflect new field structure
 
 ### 2. Create Backward Compatibility Layer
 - [x] Create `BackwardCompatibleResponse` wrapper class
@@ -21,19 +21,19 @@ Implementation tasks for the February 17, 2025 API changes to the UK Fuel Finder
 - [x] Create `BatchNotFoundError` exception class
 - [x] Update HTTP client to handle 404 responses for invalid batch numbers
 - [x] Add backward-compatible error handling for old clients
-- [ ] Update error handling tests
+- [x] Update error handling tests
 
 ### 4. Update Client Configuration
 - [x] Add `backward_compatible` parameter to `FuelFinderClient` constructor
 - [x] Add environment variable support (`UKFUELFINDER_BACKWARD_COMPATIBLE`)
-- [ ] Implement global configuration option
-- [ ] Add configuration tests
+- [x] Implement global configuration option
+- [x] Add configuration tests
 
 ### 5. Update HTTP Client
 - [x] Update response parsing to handle new field structure
 - [x] Remove handling of `success` and `message` fields
 - [x] Ensure double precision for latitude/longitude coordinates
-- [ ] Update HTTP client tests
+- [x] Update HTTP client tests
 
 ### 6. Create New Tests
 - [x] Test backward compatibility mode
@@ -45,7 +45,7 @@ Implementation tasks for the February 17, 2025 API changes to the UK Fuel Finder
 ### 7. Update Documentation
 - [x] Update README with API changes section
 - [x] Add migration guide for users
-- [ ] Update code examples for new API
+- [x] Update code examples for new API
 - [x] Update CHANGELOG with breaking changes
 - [x] Document backward compatibility mode
 
@@ -56,15 +56,15 @@ Implementation tasks for the February 17, 2025 API changes to the UK Fuel Finder
 
 ### 9. Integration Testing
 - [x] Test with real API (valid batch numbers)
-- [ ] Test with real API (invalid batch numbers - expect 404)
+- [x] Test with real API (invalid batch numbers - expect 404)
 - [x] Test backward compatibility with real API
 - [x] Verify coordinate precision handling
 
 ### 10. Release Preparation
-- [ ] Update version number in `pyproject.toml`
-- [ ] Verify all tests pass
-- [ ] Update package metadata
-- [ ] Create release notes
+- [x] Update version number in `pyproject.toml`
+- [x] Verify all tests pass
+- [x] Update package metadata
+- [x] Create release notes
 
 ## Dependencies
 - Task 1 (Response Models) must be completed before Task 2 (Backward Compatibility)

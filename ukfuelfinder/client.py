@@ -9,7 +9,7 @@ from typing import Any, Iterator, List, Optional, Tuple, Union
 from .auth import OAuth2Authenticator
 from .cache import ResponseCache
 from .compatibility import BackwardCompatibleResponse
-from .config import Config
+from .config import Config, get_global_backward_compatible
 from .exceptions import BatchNotFoundError, InvalidBatchNumberError
 from .http_client import HTTPClient
 from .models import PFS, FuelPrice, PFSInfo
@@ -73,9 +73,13 @@ class FuelFinderClient:
         else:
             self.config = Config.from_env(environment)
 
-        # Check environment variable for backward compatibility (overrides parameter)
+        # Priority: global config > env var > parameter
+        global_config = get_global_backward_compatible()
         env_backward_compatible = os.getenv("UKFUELFINDER_BACKWARD_COMPATIBLE")
-        if env_backward_compatible is not None:
+        
+        if global_config is not None:
+            self.backward_compatible = global_config
+        elif env_backward_compatible is not None:
             self.backward_compatible = env_backward_compatible.lower() in ("1", "true", "yes")
         else:
             self.backward_compatible = backward_compatible
