@@ -79,9 +79,10 @@ class TestRealAPI:
         assert stats["size"] == 0
 
     def test_invalid_batch_number_404(self, real_client):
-        """Test that invalid batch number raises BatchNotFoundError."""
-        from ukfuelfinder.exceptions import BatchNotFoundError
+        """Test that invalid batch number raises error."""
+        from ukfuelfinder.exceptions import InvalidBatchNumberError
 
         # Use a very high batch number that doesn't exist
-        with pytest.raises(BatchNotFoundError):
+        # Client is in backward_compatible mode by default, so expect InvalidBatchNumberError
+        with pytest.raises(InvalidBatchNumberError):
             real_client.get_all_pfs_prices(batch_number=99999)
