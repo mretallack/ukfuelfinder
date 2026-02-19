@@ -1,7 +1,9 @@
 """Unit tests for cache module."""
 
-import pytest
 import time
+
+import pytest
+
 from ukfuelfinder.cache import ResponseCache
 
 

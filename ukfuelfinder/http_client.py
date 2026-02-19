@@ -3,19 +3,17 @@ HTTP client for UK Fuel Finder API.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 import requests
+
 from .auth import OAuth2Authenticator
+from .exceptions import BatchNotFoundError
+from .exceptions import ConnectionError as FuelFinderConnectionError
+from .exceptions import NotFoundError, RateLimitError, ResponseParseError, ServerError
+from .exceptions import TimeoutError as FuelFinderTimeoutError
+from .exceptions import ValidationError
 from .rate_limiter import RateLimiter
-from .exceptions import (
-    NotFoundError,
-    RateLimitError,
-    ServerError,
-    ValidationError,
-    TimeoutError as FuelFinderTimeoutError,
-    ConnectionError as FuelFinderConnectionError,
-    ResponseParseError,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +90,10 @@ class HTTPClient:
                 # Handle nested response structure with "data" wrapper
                 if isinstance(data, dict) and "data" in data:
                     return data["data"]
+                # Handle old response format with success/message fields
+                if isinstance(data, dict) and "success" in data:
+                    # Old format: extract data from wrapper
+                    return data.get("data", data)
                 return data
             except ValueError as e:
                 raise ResponseParseError(f"Failed to parse JSON response: {e}")
@@ -103,6 +105,9 @@ class HTTPClient:
             raise ValidationError("Unauthorized - token may be invalid")
 
         elif response.status_code == 404:
+            # Check if this is a batch-related endpoint
+            if "/fuel-prices/" in response.url or "/pfs/" in response.url:
+                raise BatchNotFoundError(f"Batch not found: {response.url}")
             raise NotFoundError(f"Resource not found: {response.url}")
 
         elif response.status_code == 429:

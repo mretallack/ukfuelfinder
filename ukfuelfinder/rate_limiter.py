@@ -2,10 +2,11 @@
 Rate limiting for UK Fuel Finder API client.
 """
 
-import time
 import threading
+import time
 from collections import deque
 from typing import Deque
+
 from .exceptions import RateLimitError
 
 

@@ -1,13 +1,17 @@
 """
-Basic usage example for UK Fuel Finder API
+Basic usage example for UK Fuel Finder API (New API - Feb 2025)
+
+This example demonstrates using the new API without backward compatibility.
+The response objects no longer have 'success' and 'message' fields.
 """
 from ukfuelfinder import FuelFinderClient
 
-# Initialize client with credentials
+# Initialize client without backward compatibility
 client = FuelFinderClient(
     client_id="your_client_id",
     client_secret="your_client_secret",
-    environment="production"
+    environment="production",
+    backward_compatible=False  # Use new API format
 )
 
 # Get all PFS with fuel prices
@@ -21,6 +25,9 @@ for pfs in pfs_list[:5]:
     print(f"Node ID: {pfs.node_id}")
     for price in pfs.fuel_prices:
         print(f"  {price.fuel_type}: £{price.price/100:.2f}")
+        # New field: price_change_effective_timestamp
+        if hasattr(price, 'price_change_effective_timestamp') and price.price_change_effective_timestamp:
+            print(f"    Effective: {price.price_change_effective_timestamp}")
     print()
 
 # Get all unleaded prices

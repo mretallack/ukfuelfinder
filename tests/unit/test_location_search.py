@@ -1,8 +1,9 @@
 """Unit tests for location search."""
 
 import pytest
+
 from ukfuelfinder.client import FuelFinderClient
-from ukfuelfinder.models import PFSInfo, Location
+from ukfuelfinder.models import Location, PFSInfo
 
 
 @pytest.mark.unit

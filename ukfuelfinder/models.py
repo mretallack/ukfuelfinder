@@ -4,8 +4,18 @@ Data models for UK Fuel Finder API responses.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
 from dateutil import parser
+
+DEPRECATED_FIELDS = {"success", "message"}
+
+
+def _validate_no_deprecated_fields(data: Dict[str, Any]) -> None:
+    """Validate that response data doesn't contain deprecated fields."""
+    found = DEPRECATED_FIELDS.intersection(data.keys())
+    if found:
+        raise ValueError(f"Response contains deprecated fields: {', '.join(found)}")
 
 
 @dataclass
@@ -15,10 +25,13 @@ class FuelPrice:
     fuel_type: str
     price: Optional[float]  # Can be null
     price_last_updated: Optional[datetime] = None
+    price_change_effective_timestamp: Optional[datetime] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "FuelPrice":
         """Create FuelPrice from API response dictionary."""
+        _validate_no_deprecated_fields(data)
+
         price = None
         if data.get("price"):
             # Price comes as string like "0120.0000"
@@ -28,10 +41,17 @@ class FuelPrice:
         if data.get("price_last_updated"):
             price_last_updated = parser.parse(data["price_last_updated"])
 
+        price_change_effective_timestamp = None
+        if data.get("price_change_effective_timestamp"):
+            price_change_effective_timestamp = parser.parse(
+                data["price_change_effective_timestamp"]
+            )
+
         return cls(
             fuel_type=data["fuel_type"],
             price=price,
             price_last_updated=price_last_updated,
+            price_change_effective_timestamp=price_change_effective_timestamp,
         )
 
 
@@ -48,6 +68,8 @@ class PFS:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "PFS":
         """Create PFS from API response dictionary."""
+        _validate_no_deprecated_fields(data)
+
         fuel_prices = [FuelPrice.from_dict(fp) for fp in data.get("fuel_prices", [])]
         return cls(
             node_id=data["node_id"],
@@ -72,6 +94,8 @@ class Address:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Address":
         """Create Address from API response dictionary."""
+        _validate_no_deprecated_fields(data)
+
         return cls(
             address_line_1=data["address_line_1"],
             address_line_2=data.get("address_line_2"),
@@ -98,6 +122,8 @@ class Location:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Location":
         """Create Location from API response dictionary."""
+        _validate_no_deprecated_fields(data)
+
         latitude = float(data["latitude"]) if data.get("latitude") is not None else None
         longitude = float(data["longitude"]) if data.get("longitude") is not None else None
 
@@ -136,6 +162,8 @@ class PFSInfo:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "PFSInfo":
         """Create PFSInfo from API response dictionary."""
+        _validate_no_deprecated_fields(data)
+
         location = Location.from_dict(data["location"]) if "location" in data else None
 
         return cls(

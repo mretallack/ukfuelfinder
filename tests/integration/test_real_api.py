@@ -1,7 +1,8 @@
 """Integration tests with real API."""
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 
 @pytest.mark.integration
@@ -52,11 +53,11 @@ class TestRealAPI:
 
     def test_cache_functionality(self, real_client):
         """Test that caching works."""
-        # First request
-        prices1 = real_client.get_all_pfs_prices()
+        # First request with specific batch to avoid rate limits
+        prices1 = real_client.get_all_pfs_prices(batch_number=1)
 
         # Second request (should be cached)
-        prices2 = real_client.get_all_pfs_prices()
+        prices2 = real_client.get_all_pfs_prices(batch_number=1)
 
         # Should return same data
         assert len(prices1) == len(prices2)
@@ -67,8 +68,8 @@ class TestRealAPI:
 
     def test_clear_cache(self, real_client):
         """Test cache clearing."""
-        # Make a request
-        real_client.get_all_pfs_prices()
+        # Make a request with specific batch to avoid rate limits
+        real_client.get_all_pfs_prices(batch_number=1)
 
         # Clear cache
         real_client.clear_cache()
@@ -76,3 +77,12 @@ class TestRealAPI:
         # Check cache is empty
         stats = real_client.get_cache_stats()
         assert stats["size"] == 0
+
+    def test_invalid_batch_number_404(self, real_client):
+        """Test that invalid batch number raises error."""
+        from ukfuelfinder.exceptions import InvalidBatchNumberError
+
+        # Use a very high batch number that doesn't exist
+        # Client is in backward_compatible mode by default, so expect InvalidBatchNumberError
+        with pytest.raises(InvalidBatchNumberError):
+            real_client.get_all_pfs_prices(batch_number=99999)

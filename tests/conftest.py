@@ -1,10 +1,12 @@
 """Pytest configuration and fixtures."""
 
 import os
+
 import pytest
 from dotenv import load_dotenv
+
+from tests.fixtures.responses import MOCK_PFS_RESPONSE, MOCK_TOKEN_RESPONSE
 from ukfuelfinder import FuelFinderClient
-from tests.fixtures.responses import MOCK_TOKEN_RESPONSE, MOCK_PFS_RESPONSE
 
 # Load environment variables from .env file
 load_dotenv()
