@@ -6,7 +6,6 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-
 # Global configuration
 _global_backward_compatible: Optional[bool] = None
 
@@ -14,7 +13,7 @@ _global_backward_compatible: Optional[bool] = None
 def set_global_backward_compatible(enabled: bool) -> None:
     """
     Set global backward compatibility mode.
-    
+
     Args:
         enabled: Enable or disable backward compatibility globally
     """
@@ -25,7 +24,7 @@ def set_global_backward_compatible(enabled: bool) -> None:
 def get_global_backward_compatible() -> Optional[bool]:
     """
     Get global backward compatibility setting.
-    
+
     Returns:
         Global backward compatibility setting, or None if not set
     """

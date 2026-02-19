@@ -68,11 +68,7 @@ def test_successful_request_old_format(http_client):
     with patch.object(http_client.session, "request") as mock_request:
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "success": True,
-            "message": "",
-            "data": [{"id": 1}]
-        }
+        mock_response.json.return_value = {"success": True, "message": "", "data": [{"id": 1}]}
         mock_response.elapsed.total_seconds.return_value = 0.5
         mock_request.return_value = mock_response
 

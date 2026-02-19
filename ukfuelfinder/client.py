@@ -76,7 +76,7 @@ class FuelFinderClient:
         # Priority: global config > env var > parameter
         global_config = get_global_backward_compatible()
         env_backward_compatible = os.getenv("UKFUELFINDER_BACKWARD_COMPATIBLE")
-        
+
         if global_config is not None:
             self.backward_compatible = global_config
         elif env_backward_compatible is not None:

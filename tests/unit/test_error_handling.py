@@ -101,7 +101,7 @@ class TestErrorHandling:
 
             with pytest.raises(RateLimitError) as exc_info:
                 http_client.get("/endpoint")
-            
+
             assert exc_info.value.retry_after == 60
 
     def test_server_error_on_500(self, http_client):
