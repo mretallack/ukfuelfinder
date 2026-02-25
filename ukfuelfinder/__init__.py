@@ -4,7 +4,7 @@ UK Fuel Finder Python Library
 Python library for accessing the UK Government Fuel Finder API.
 """
 
-__version__ = "2.0.1"
+__version__ = "3.0.0"
 
 from .client import FuelFinderClient
 from .config import set_global_backward_compatible

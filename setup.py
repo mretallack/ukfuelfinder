@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="ukfuelfinder",
-    version="2.0.1",
+    version="3.0.0",
     author="Mark Retallack",
     author_email="mark@retallack.org.uk",
     description="Python library for accessing the UK Government Fuel Finder API",

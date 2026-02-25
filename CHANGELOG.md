@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.1] - 2026-02-26
+## [3.0.0] - 2026-02-26
 
 ### Changed
 - **Breaking API Change**: `mft_organisation_name` field removed from UK Fuel Finder API (February 25-26, 2026)
