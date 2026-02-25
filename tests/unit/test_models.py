@@ -148,3 +148,65 @@ class TestModels:
 
         with pytest.raises(ValueError, match="deprecated fields: success"):
             PFSInfo.from_dict(data)
+
+    def test_pfs_without_mft_organisation_name(self):
+        """Test PFS creation without mft_organisation_name field."""
+        data = {
+            "node_id": "test123",
+            "trading_name": "Test Station",
+            "public_phone_number": None,
+            "fuel_prices": [],
+        }
+
+        pfs = PFS.from_dict(data)
+
+        assert pfs.node_id == "test123"
+        assert pfs.mft_organisation_name is None
+        assert pfs.trading_name == "Test Station"
+
+    def test_pfs_with_mft_organisation_name(self):
+        """Test PFS creation with mft_organisation_name field."""
+        data = {
+            "node_id": "test123",
+            "mft_organisation_name": "Test Org",
+            "trading_name": "Test Station",
+            "public_phone_number": None,
+            "fuel_prices": [],
+        }
+
+        pfs = PFS.from_dict(data)
+
+        assert pfs.node_id == "test123"
+        assert pfs.mft_organisation_name == "Test Org"
+        assert pfs.trading_name == "Test Station"
+
+    def test_pfsinfo_without_mft_organisation_name(self):
+        """Test PFSInfo creation without mft_organisation_name field."""
+        data = {
+            "node_id": "test123",
+            "trading_name": "Test Station",
+            "public_phone_number": "01234567890",
+            "location": {"latitude": "51.5", "longitude": "-0.1"},
+        }
+
+        pfs_info = PFSInfo.from_dict(data)
+
+        assert pfs_info.node_id == "test123"
+        assert pfs_info.mft_organisation_name is None
+        assert pfs_info.trading_name == "Test Station"
+
+    def test_pfsinfo_with_mft_organisation_name(self):
+        """Test PFSInfo creation with mft_organisation_name field."""
+        data = {
+            "node_id": "test123",
+            "mft_organisation_name": "Test Org",
+            "trading_name": "Test Station",
+            "public_phone_number": "01234567890",
+            "location": {"latitude": "51.5", "longitude": "-0.1"},
+        }
+
+        pfs_info = PFSInfo.from_dict(data)
+
+        assert pfs_info.node_id == "test123"
+        assert pfs_info.mft_organisation_name == "Test Org"
+        assert pfs_info.trading_name == "Test Station"

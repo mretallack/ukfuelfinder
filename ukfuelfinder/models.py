@@ -60,7 +60,7 @@ class PFS:
     """Petrol Filling Station with fuel prices."""
 
     node_id: str
-    mft_organisation_name: str
+    mft_organisation_name: Optional[str]
     trading_name: str
     public_phone_number: Optional[str]
     fuel_prices: List[FuelPrice]
@@ -73,7 +73,7 @@ class PFS:
         fuel_prices = [FuelPrice.from_dict(fp) for fp in data.get("fuel_prices", [])]
         return cls(
             node_id=data["node_id"],
-            mft_organisation_name=data["mft_organisation_name"],
+            mft_organisation_name=data.get("mft_organisation_name"),
             trading_name=data["trading_name"],
             public_phone_number=data.get("public_phone_number"),
             fuel_prices=fuel_prices,
@@ -144,7 +144,7 @@ class PFSInfo:
     """Petrol Filling Station information (without prices)."""
 
     node_id: str
-    mft_organisation_name: str
+    mft_organisation_name: Optional[str]
     trading_name: str
     public_phone_number: Optional[str]
     is_same_trading_and_brand_name: Optional[bool] = None
@@ -168,7 +168,7 @@ class PFSInfo:
 
         return cls(
             node_id=data["node_id"],
-            mft_organisation_name=data["mft_organisation_name"],
+            mft_organisation_name=data.get("mft_organisation_name"),
             trading_name=data["trading_name"],
             public_phone_number=data.get("public_phone_number"),
             is_same_trading_and_brand_name=data.get("is_same_trading_and_brand_name"),

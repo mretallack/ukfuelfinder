@@ -66,3 +66,29 @@ MOCK_PFS_INFO_RESPONSE = [
 ]
 
 MOCK_ERROR_RESPONSE = {"error": "unauthorized", "message": "Invalid or expired access token"}
+
+# Fixtures for API responses without mft_organisation_name (Feb 25-26, 2026 changes)
+MOCK_PFS_RESPONSE_NO_MFT = [
+    {
+        "node_id": "0028acef5f3afc41c7e7d",
+        "public_phone_number": None,
+        "trading_name": "FORECOURT 4",
+        "fuel_prices": [
+            {
+                "fuel_type": "unleaded",
+                "price": 142.9,
+                "currency": "GBP",
+                "updated_at": "2026-02-02T18:00:00Z",
+            },
+        ],
+    },
+]
+
+MOCK_PFS_INFO_RESPONSE_NO_MFT = [
+    {
+        "node_id": "0028acef5f3afc41c7e7d",
+        "trading_name": "Shell Station",
+        "public_phone_number": "01234567890",
+        "location": {"latitude": 51.5074, "longitude": -0.1278},
+    }
+]

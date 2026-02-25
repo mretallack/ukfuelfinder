@@ -59,6 +59,30 @@ export UKFUELFINDER_BACKWARD_COMPATIBLE=0  # Disable backward compatibility
 5. Switch to `backward_compatible=False` when ready
 6. Update to use the new `price_change_effective_timestamp` field
 
+## ⚠️ API Changes (February 25-26, 2026)
+
+The UK Fuel Finder API has removed additional fields:
+
+### Breaking Changes
+1. **Removed Field**: `mft_organisation_name` removed from all API responses
+2. **Removed Field**: `mft.name` removed from CSV extracts
+
+### Impact
+- The `mft_organisation_name` field in `PFS` and `PFSInfo` models is now `Optional[str]`
+- Field will be `None` for all new API responses
+- Existing code accessing this field will receive `None` instead of a string value
+
+### Migration
+Check for `None` before using the field:
+
+```python
+pfs = client.get_all_pfs_prices()[0]
+if pfs.mft_organisation_name:
+    print(f"Organisation: {pfs.mft_organisation_name}")
+else:
+    print("Organisation name not available")
+```
+
 ## Features
 
 - **OAuth 2.0 Authentication** - Automatic token management with refresh support

@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1] - 2026-02-26
+
+### Changed
+- **Breaking API Change**: `mft_organisation_name` field removed from UK Fuel Finder API (February 25-26, 2026)
+- Made `mft_organisation_name` optional (`Optional[str]`) in `PFS` and `PFSInfo` models
+- Field now returns `None` instead of string value in new API responses
+
+### Fixed
+- Backward compatibility maintained - existing code continues to work without modification
+- Models handle API responses without `mft_organisation_name` field gracefully
+- No exceptions raised when field is missing from API response
+
+### Updated
+- OpenAPI specification updated to match current API (February 25-26, 2026)
+- Documentation updated to reflect field removal and optional nature
+- Added tests for both presence and absence of `mft_organisation_name` field
+- README.md includes migration guidance for handling optional field
+
+### Technical Details
+- All 70 unit tests passing
+- 85% code coverage maintained
+- Type hints updated: `str` → `Optional[str]`
+- No breaking changes to public API
+
 ## [2.0.0] - 2025-02-19
 
 ### Added
