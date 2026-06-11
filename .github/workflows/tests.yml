@@ -26,14 +26,31 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest pytest-cov black flake8 python-dotenv responses
+        pip install pytest pytest-cov python-dotenv responses
         pip install -e .
 
     - name: Run tests
       run: |
         pytest tests/unit/ -v --cov=ukfuelfinder --cov-report=term-missing
 
-    - name: Check code quality
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
       run: |
-        black --check ukfuelfinder tests
-        flake8 ukfuelfinder
+        python -m pip install --upgrade pip
+        pip install black flake8
+        pip install -e .
+
+    - name: Check formatting
+      run: black --check ukfuelfinder tests
+
+    - name: Lint
+      run: flake8 ukfuelfinder
